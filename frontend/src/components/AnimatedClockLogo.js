@@ -1,69 +1,86 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { motion } from 'framer-motion';
 import { getAEDTTimeComponents, calculateClockAngles } from '../utils/timeUtils';
 
 /**
- * AnimatedClockLogo Component
+ * AnimatedClockLogo Component (Performance Optimized)
  * Displays an animated analog clock that reflects real AEDT time
- * Smooth hand movements using requestAnimationFrame
- * Clickable to navigate to dashboard
+ * Uses CSS transforms for smooth 60fps animations
+ * Memoized to prevent unnecessary re-renders
  */
-export default function AnimatedClockLogo({ onClick, size = 60, className = '' }) {
+const AnimatedClockLogo = memo(({ onClick, size = 60, className = '' }) => {
   const [angles, setAngles] = useState({ hourAngle: 0, minuteAngle: 0, secondAngle: 0 });
+  const rafRef = useRef(null);
+  const lastUpdateRef = useRef(0);
 
   useEffect(() => {
-    let animationFrameId;
-
-    const updateClock = () => {
-      const time = getAEDTTimeComponents();
-      const newAngles = calculateClockAngles(time);
-      setAngles(newAngles);
-      animationFrameId = requestAnimationFrame(updateClock);
+    const updateClock = (timestamp) => {
+      // Throttle updates to ~30fps for smoother performance (every ~33ms)
+      if (timestamp - lastUpdateRef.current >= 33) {
+        const time = getAEDTTimeComponents();
+        const newAngles = calculateClockAngles(time);
+        setAngles(newAngles);
+        lastUpdateRef.current = timestamp;
+      }
+      rafRef.current = requestAnimationFrame(updateClock);
     };
 
-    updateClock();
+    rafRef.current = requestAnimationFrame(updateClock);
 
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
       }
     };
   }, []);
 
   return (
     <motion.div
-      className={`cursor-pointer ${className}`}
+      className={`cursor-pointer select-none ${className}`}
       onClick={onClick}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
-      initial={{ opacity: 0, rotate: -180 }}
-      animate={{ opacity: 1, rotate: 0 }}
-      transition={{ duration: 0.8, ease: 'easeOut' }}
+      initial={{ opacity: 0, scale: 0.8 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: [0.34, 1.56, 0.64, 1] }}
     >
       <svg
         width={size}
         height={size}
         viewBox="0 0 200 200"
-        className="drop-shadow-lg"
+        className="drop-shadow-md"
       >
-        {/* Clock face */}
+        {/* Clock face with gradient */}
+        <defs>
+          <linearGradient id="clockGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f0f9ff" />
+            <stop offset="100%" stopColor="#e0f2fe" />
+          </linearGradient>
+          <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.15"/>
+          </filter>
+        </defs>
+
         <circle
           cx="100"
           cy="100"
           r="95"
-          fill="white"
-          stroke="currentColor"
-          strokeWidth="4"
-          className="text-blue-600"
+          fill="url(#clockGradient)"
+          stroke="#3b82f6"
+          strokeWidth="3"
+          filter="url(#shadow)"
         />
         
         {/* Hour markers */}
         {[...Array(12)].map((_, i) => {
           const angle = (i * 30 - 90) * (Math.PI / 180);
-          const x1 = 100 + 75 * Math.cos(angle);
-          const y1 = 100 + 75 * Math.sin(angle);
-          const x2 = 100 + 85 * Math.cos(angle);
-          const y2 = 100 + 85 * Math.sin(angle);
+          const isMainMarker = i % 3 === 0;
+          const innerRadius = isMainMarker ? 70 : 80;
+          const outerRadius = 88;
+          const x1 = 100 + innerRadius * Math.cos(angle);
+          const y1 = 100 + innerRadius * Math.sin(angle);
+          const x2 = 100 + outerRadius * Math.cos(angle);
+          const y2 = 100 + outerRadius * Math.sin(angle);
           
           return (
             <line
@@ -72,67 +89,69 @@ export default function AnimatedClockLogo({ onClick, size = 60, className = '' }
               y1={y1}
               x2={x2}
               y2={y2}
-              stroke="currentColor"
-              strokeWidth={i % 3 === 0 ? "3" : "2"}
-              className="text-gray-600"
+              stroke={isMainMarker ? "#1e40af" : "#60a5fa"}
+              strokeWidth={isMainMarker ? "3" : "2"}
+              strokeLinecap="round"
             />
           );
         })}
 
-        {/* Center dot */}
-        <circle cx="100" cy="100" r="6" fill="currentColor" className="text-blue-600" />
-
         {/* Hour hand */}
-        <motion.line
+        <line
           x1="100"
           y1="100"
           x2="100"
           y2="55"
-          stroke="currentColor"
-          strokeWidth="6"
+          stroke="#1e293b"
+          strokeWidth="7"
           strokeLinecap="round"
-          className="text-gray-800"
           style={{
             transformOrigin: '100px 100px',
-            transform: `rotate(${angles.hourAngle}deg)`
+            transform: `rotate(${angles.hourAngle}deg)`,
+            transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         />
 
         {/* Minute hand */}
-        <motion.line
+        <line
           x1="100"
           y1="100"
           x2="100"
           y2="35"
-          stroke="currentColor"
-          strokeWidth="4"
+          stroke="#334155"
+          strokeWidth="5"
           strokeLinecap="round"
-          className="text-gray-700"
           style={{
             transformOrigin: '100px 100px',
-            transform: `rotate(${angles.minuteAngle}deg)`
+            transform: `rotate(${angles.minuteAngle}deg)`,
+            transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
           }}
         />
 
-        {/* Second hand */}
-        <motion.line
+        {/* Second hand with smoother animation */}
+        <line
           x1="100"
-          y1="100"
+          y1="105"
           x2="100"
           y2="25"
-          stroke="currentColor"
+          stroke="#ef4444"
           strokeWidth="2"
           strokeLinecap="round"
-          className="text-red-500"
           style={{
             transformOrigin: '100px 100px',
-            transform: `rotate(${angles.secondAngle}deg)`
+            transform: `rotate(${angles.secondAngle}deg)`,
+            transition: 'transform 0.1s linear'
           }}
         />
 
-        {/* Center cap */}
-        <circle cx="100" cy="100" r="4" fill="currentColor" className="text-red-500" />
+        {/* Center hub */}
+        <circle cx="100" cy="100" r="8" fill="#1e293b" />
+        <circle cx="100" cy="100" r="5" fill="#ef4444" />
       </svg>
     </motion.div>
   );
-}
+});
+
+AnimatedClockLogo.displayName = 'AnimatedClockLogo';
+
+export default AnimatedClockLogo;

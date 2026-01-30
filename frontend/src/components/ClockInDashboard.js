@@ -66,19 +66,19 @@ export default function ClockInDashboard({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="space-y-8"
+      className="space-y-6 sm:space-y-8"
     >
       {/* Locked State Warning */}
       {isLocked && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-center gap-3 mb-6"
+          className="bg-red-50/80 backdrop-blur-sm border border-red-200 rounded-xl p-4 flex items-center gap-3 shadow-sm"
         >
-          <Lock className="w-6 h-6 text-red-400" />
+          <Lock className="w-5 h-5 text-red-600 flex-shrink-0" />
           <div>
-            <h3 className="font-semibold text-red-200">Company Selection Required</h3>
-            <p className="text-sm text-red-300">Please select a company before tracking time</p>
+            <h3 className="font-semibold text-red-800 text-sm">Company Selection Required</h3>
+            <p className="text-sm text-red-600">Please select a company before tracking time</p>
           </div>
         </motion.div>
       )}
@@ -86,15 +86,15 @@ export default function ClockInDashboard({
       {/* Selected Company Display */}
       {!isLocked && selectedCompany && (
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-emerald-500/20 border border-emerald-500/50 rounded-xl p-4 flex items-center gap-3 mb-6"
+          className="bg-emerald-50/80 backdrop-blur-sm border border-emerald-200 rounded-xl p-4 flex items-center gap-3 shadow-sm"
         >
-          <Clock className="w-6 h-6 text-emerald-400" />
+          <Clock className="w-5 h-5 text-emerald-600 flex-shrink-0" />
           <div>
-            <h3 className="font-semibold text-emerald-200">Tracking for: {selectedCompany.name}</h3>
+            <h3 className="font-semibold text-emerald-800 text-sm">Tracking for: {selectedCompany.name}</h3>
             {selectedCompany.pay_rate > 0 && (
-              <p className="text-sm text-emerald-300">${selectedCompany.pay_rate}/hour</p>
+              <p className="text-sm text-emerald-600">${selectedCompany.pay_rate}/hour</p>
             )}
           </div>
         </motion.div>
@@ -103,16 +103,16 @@ export default function ClockInDashboard({
       {/* Primary Clock In/Out Section */}
       <motion.div
         variants={itemVariants}
-        className="flex flex-col items-center justify-center min-h-[600px] py-12"
+        className="flex flex-col items-center justify-center py-8 sm:py-12"
       >
         {/* Status Badge */}
-        <motion.div variants={itemVariants} className="mb-8">
+        <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
           <motion.div
-            animate={isClockedIn ? { scale: [1, 1.1, 1] } : {}}
-            transition={{ duration: 2, repeat: isClockedIn ? Infinity : 0 }}
-            className={`px-6 py-3 rounded-full font-semibold text-center ${
+            animate={isClockedIn ? { scale: [1, 1.05, 1] } : {}}
+            transition={{ duration: 3, repeat: isClockedIn ? Infinity : 0, ease: 'easeInOut' }}
+            className={`px-5 py-2.5 rounded-full font-semibold text-sm text-white shadow-lg ${
               isClockedIn
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-lg shadow-emerald-500/50'
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
                 : 'bg-gradient-to-r from-gray-600 to-gray-700'
             }`}
           >
@@ -121,7 +121,7 @@ export default function ClockInDashboard({
         </motion.div>
 
         {/* Animated Timer */}
-        <motion.div variants={itemVariants} className="mb-12 w-full flex justify-center">
+        <motion.div variants={itemVariants} className="mb-8 sm:mb-12 w-full flex justify-center">
           <AnimatedTimer
             clockInTime={currentEntry?.clock_in}
             isActive={isClockedIn}
@@ -131,21 +131,21 @@ export default function ClockInDashboard({
         {/* Primary Action Button */}
         <motion.button
           variants={itemVariants}
-          whileHover={{ scale: isLocked ? 1 : 1.05, boxShadow: '0 0 40px rgba(14, 165, 233, 0.6)' }}
-          whileTap={{ scale: isLocked ? 1 : 0.95 }}
+          whileHover={{ scale: isLocked ? 1 : 1.03, boxShadow: isLocked ? undefined : '0 20px 40px rgba(14, 165, 233, 0.4)' }}
+          whileTap={{ scale: isLocked ? 1 : 0.97 }}
           onClick={isClockedIn ? onClockOut : onClockIn}
           disabled={loading || isLocked}
-          className={`min-w-[280px] py-6 rounded-3xl font-bold text-xl mb-8 transition-all duration-300 shadow-2xl ${
+          className={`min-w-[240px] sm:min-w-[280px] py-5 sm:py-6 rounded-2xl font-bold text-lg sm:text-xl mb-6 sm:mb-8 transition-all duration-300 shadow-xl ${
             isLocked
-              ? 'bg-gray-600 cursor-not-allowed opacity-50'
+              ? 'bg-gray-400 cursor-not-allowed opacity-60'
               : isClockedIn
-              ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:shadow-red-500/50 text-white'
-              : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:shadow-emerald-500/50 text-white'
+              ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white'
+              : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white'
           } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <motion.div
-            animate={{ y: [0, -2, 0] }}
-            transition={{ duration: 0.5, repeat: loading ? Infinity : 0 }}
+            animate={loading ? { y: [0, -2, 0] } : {}}
+            transition={{ duration: 0.6, repeat: loading ? Infinity : 0, ease: 'easeInOut' }}
           >
             {isLocked ? '🔒 Locked - Select Company' : loading ? '⏳ Processing...' : isClockedIn ? '🛑 Clock Out' : '✅ Clock In'}
           </motion.div>
@@ -155,25 +155,25 @@ export default function ClockInDashboard({
         {isClockedIn && currentEntry && (
           <motion.div
             variants={itemVariants}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="card w-full max-w-md"
+            className="bg-white/90 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-gray-200 w-full max-w-md"
           >
-            <h3 className="text-gray-800 font-semibold mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-sky-500" />
+            <h3 className="text-gray-800 font-semibold mb-3 flex items-center gap-2 text-sm">
+              <Clock className="w-4 h-4 text-sky-500" />
               Current Session
             </h3>
-            <div className="space-y-3 text-gray-700 text-sm">
+            <div className="space-y-2 text-sm">
               <div className="flex justify-between items-center py-2 border-b border-gray-200">
                 <span className="text-gray-600">Started at</span>
-                <span className="font-semibold">
+                <span className="font-semibold text-gray-800">
                   {new Date(currentEntry.clock_in).toLocaleTimeString()}
                 </span>
               </div>
               {currentEntry.notes && (
                 <div className="py-2">
                   <p className="text-gray-600 mb-1">Notes</p>
-                  <p className="font-semibold italic">{currentEntry.notes}</p>
+                  <p className="font-medium text-gray-800 italic">{currentEntry.notes}</p>
                 </div>
               )}
             </div>
@@ -184,21 +184,21 @@ export default function ClockInDashboard({
       {/* Navigation Cards */}
       <motion.div
         variants={itemVariants}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
       >
         {navigationCards.map((card) => {
           const Icon = card.icon;
           return (
             <motion.button
               key={card.action}
-              whileHover={{ scale: 1.05, y: -5 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => onNavigate(card.action)}
-              className={`card-hover bg-gradient-to-br ${card.color} border ${card.borderColor} group`}
+              className={`bg-white/90 backdrop-blur-sm rounded-xl p-5 shadow-md hover:shadow-lg border border-gray-200 transition-all duration-200 text-left group`}
             >
-              <Icon className={`w-8 h-8 ${card.iconColor} mb-3 group-hover:scale-110 transition-transform`} />
-              <h3 className="font-semibold text-gray-800 text-left">{card.title}</h3>
-              <p className="text-xs text-gray-600 mt-1">{card.description}</p>
+              <Icon className={`w-7 h-7 ${card.iconColor} mb-3 group-hover:scale-110 transition-transform duration-200`} />
+              <h3 className="font-semibold text-gray-800 text-base">{card.title}</h3>
+              <p className="text-xs text-gray-600 mt-1.5 leading-relaxed">{card.description}</p>
             </motion.button>
           );
         })}

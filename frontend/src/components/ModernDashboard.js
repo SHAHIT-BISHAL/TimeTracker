@@ -253,8 +253,10 @@ export default function ModernDashboard() {
       />
 
       {/* Main Content - with padding for fixed header */}
-      <main className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
-        {renderView()}
+      <main className="pt-20 px-4 sm:px-6 lg:px-8 pb-12 max-w-7xl mx-auto">
+        <div className="max-w-5xl mx-auto">
+          {renderView()}
+        </div>
       </main>
 
       {/* Navigation Menu */}
