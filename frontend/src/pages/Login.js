@@ -1,15 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Clock, LogIn, AlertCircle } from 'lucide-react';
+import { Clock, LogIn, AlertCircle, CheckCircle, Wifi } from 'lucide-react';
 import { authService } from '../services/api';
+import { healthCheck } from '../services/healthCheck';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState(null);
+  const [connectionChecking, setConnectionChecking] = useState(true);
   const navigate = useNavigate();
+
+  // Check server connection on mount
+  useEffect(() => {
+    const checkConnection = async () => {
+      setConnectionChecking(true);
+      try {
+        const status = await healthCheck();
+        setConnectionStatus(status);
+      } catch (err) {
+        console.error('Health check failed:', err);
+        setConnectionStatus({
+          healthy: false,
+          message: 'Cannot reach the server',
+          error: err.message
+        });
+      } finally {
+        setConnectionChecking(false);
+      }
+    };
+
+    checkConnection();
+    // Re-check every 30 seconds
+    const interval = setInterval(checkConnection, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -94,6 +122,39 @@ export default function Login() {
           >
             Stay focused, track your time
           </motion.p>
+
+          {/* Connection Status */}
+          {!connectionChecking && connectionStatus && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`mb-6 p-4 rounded-xl border flex items-center gap-3 ${
+                connectionStatus.healthy
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-yellow-50 border-yellow-200'
+              }`}
+            >
+              {connectionStatus.healthy ? (
+                <>
+                  <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <div>
+                    <p className="text-green-700 text-sm font-medium">Server Connected</p>
+                    <p className="text-green-600 text-xs">{connectionStatus.apiUrl}</p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Wifi className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                  <div>
+                    <p className="text-yellow-700 text-sm font-medium">{connectionStatus.message}</p>
+                    {connectionStatus.hint && (
+                      <p className="text-yellow-600 text-xs">{connectionStatus.hint}</p>
+                    )}
+                  </div>
+                </>
+              )}
+            </motion.div>
+          )}
 
           {/* Error Message */}
           {error && (
