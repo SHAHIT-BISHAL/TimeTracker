@@ -4,6 +4,8 @@ import { Trash2, Edit2, Download } from 'lucide-react';
 import ManualEntryForm from './ManualEntryForm';
 import './TimeEntryManager.css';
 
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+
 export default function TimeEntryManager() {
   const [entries, setEntries] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -19,7 +21,7 @@ export default function TimeEntryManager() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:5000/api/time/entries', config);
+      const res = await axios.get(`${API_URL}/time/entries`, config);
       setEntries(res.data);
       setLoading(false);
     } catch (error) {
@@ -42,7 +44,7 @@ export default function TimeEntryManager() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.put(`http://localhost:5000/api/entries/${editingId}`, editData, config);
+      await axios.put(`${API_URL}/entries/${editingId}`, editData, config);
       setEditingId(null);
       setMessage('Entry updated successfully');
       setTimeout(() => setMessage(''), 3000);
@@ -58,7 +60,7 @@ export default function TimeEntryManager() {
       try {
         const token = localStorage.getItem('token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        await axios.delete(`http://localhost:5000/api/entries/${id}`, config);
+        await axios.delete(`${API_URL}/entries/${id}`, config);
         setMessage('Entry deleted successfully');
         setTimeout(() => setMessage(''), 3000);
         fetchEntries();
@@ -76,7 +78,7 @@ export default function TimeEntryManager() {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'
       };
-      const res = await axios.get('http://localhost:5000/api/entries/export/csv', config);
+      const res = await axios.get(`${API_URL}/entries/export/csv`, config);
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const link = document.createElement('a');
       link.href = url;

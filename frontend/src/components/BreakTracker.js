@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Play, Square, Coffee } from 'lucide-react';
 import './BreakTracker.css';
 
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+
 export default function BreakTracker() {
   const [activeBreak, setActiveBreak] = useState(null);
   const [breaks, setBreaks] = useState([]);
@@ -25,7 +27,7 @@ export default function BreakTracker() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:5000/api/breaks/active', config);
+      const res = await axios.get(`${API_URL}/breaks/active`, config);
       setActiveBreak(res.data[0] || null);
       if (res.data[0]) {
         const elapsed = Math.floor((Date.now() - new Date(res.data[0].break_start).getTime()) / 1000);
@@ -41,7 +43,7 @@ export default function BreakTracker() {
       setLoading(true);
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.post('http://localhost:5000/api/breaks/start', {}, config);
+      const res = await axios.post(`${API_URL}/breaks/start`, {}, config);
       setActiveBreak(res.data);
       setElapsedTime(0);
     } catch (error) {
@@ -58,7 +60,7 @@ export default function BreakTracker() {
       setLoading(true);
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post(`http://localhost:5000/api/breaks/end/${activeBreak.id}`, {}, config);
+      await axios.post(`${API_URL}/breaks/end/${activeBreak.id}`, {}, config);
       setActiveBreak(null);
       setElapsedTime(0);
       fetchActiveBreak();

@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Plus, X } from 'lucide-react';
 import './ManualEntryForm.css';
 
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+
 export default function ManualEntryForm({ onEntryAdded }) {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,7 +28,7 @@ export default function ManualEntryForm({ onEntryAdded }) {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      await axios.post('http://localhost:5000/api/manual-entries', formData, config);
+      await axios.post(`${API_URL}/manual-entries`, formData, config);
       
       setMessage('Entry added successfully');
       setFormData({ clock_in: '', clock_out: '', notes: '' });

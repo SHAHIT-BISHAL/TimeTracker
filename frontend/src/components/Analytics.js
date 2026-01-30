@@ -3,6 +3,8 @@ import axios from 'axios';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import './Analytics.css';
 
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+
 export default function Analytics() {
   const [weeklyData, setWeeklyData] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
@@ -19,7 +21,7 @@ export default function Analytics() {
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
         // Fetch all entries for analysis
-        const entriesRes = await axios.get('http://localhost:5000/api/time/entries', config);
+        const entriesRes = await axios.get(`${API_URL}/time/entries`, config);
         const entries = entriesRes.data;
 
         processWeeklyData(entries);

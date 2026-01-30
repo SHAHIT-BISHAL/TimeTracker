@@ -3,6 +3,8 @@ import axios from 'axios';
 import { timeService } from '../services/api';
 import './ClockInOut.css';
 
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+
 export default function ClockInOut() {
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [currentEntry, setCurrentEntry] = useState(null);
@@ -23,7 +25,7 @@ export default function ClockInOut() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.get('http://localhost:5000/api/companies', config);
+      const response = await axios.get(`${API_URL}/companies`, config);
       setCompanies(response.data);
       if (response.data.length > 0) {
         setSelectedCompany(response.data[0].id);

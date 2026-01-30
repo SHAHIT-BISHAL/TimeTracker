@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Plus, Building2, ChevronRight } from 'lucide-react';
 import './CompanyManager.css';
 
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+
 export default function CompanyManager() {
   const [companies, setCompanies] = useState([]);
   const [currentCompany, setCurrentCompany] = useState(null);
@@ -19,11 +21,11 @@ export default function CompanyManager() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:5000/api/companies', config);
+      const res = await axios.get(`${API_URL}/companies`, config);
       setCompanies(res.data);
       
       // Get current company from user
-      const userRes = await axios.get('http://localhost:5000/api/users/profile', config);
+      const userRes = await axios.get(`${API_URL}/users/profile`, config);
       const current = res.data.find(c => c.id === userRes.data.current_company_id);
       setCurrentCompany(current || res.data[0]);
       setLoading(false);
@@ -42,7 +44,7 @@ export default function CompanyManager() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.post('http://localhost:5000/api/companies', formData, config);
+      const res = await axios.post(`${API_URL}/companies`, formData, config);
       
       setCompanies([...companies, res.data]);
       setCurrentCompany(res.data);
@@ -60,7 +62,7 @@ export default function CompanyManager() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      await axios.post(`http://localhost:5000/api/companies/${companyId}/switch`, {}, config);
+      await axios.post(`${API_URL}/companies/${companyId}/switch`, {}, config);
       
       const selected = companies.find(c => c.id === companyId);
       setCurrentCompany(selected);

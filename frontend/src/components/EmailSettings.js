@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Mail, Lock, CheckCircle } from 'lucide-react';
 import './EmailSettings.css';
 
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+
 export default function EmailSettings() {
   const [settings, setSettings] = useState({
     smtp_host: '',
@@ -25,7 +27,7 @@ export default function EmailSettings() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:5000/api/email-settings', config);
+      const res = await axios.get(`${API_URL}/email-settings`, config);
       setSettings(res.data);
       setLoading(false);
     } catch (error) {
@@ -39,7 +41,7 @@ export default function EmailSettings() {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      await axios.put('http://localhost:5000/api/email-settings', settings, config);
+      await axios.put(`${API_URL}/email-settings`, settings, config);
       
       setMessage('Email settings saved successfully');
       setTimeout(() => setMessage(''), 3000);
@@ -59,7 +61,7 @@ export default function EmailSettings() {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      const res = await axios.post('http://localhost:5000/api/email-settings/test-connection', {}, config);
+      const res = await axios.post(`${API_URL}/email-settings/test-connection`, {}, config);
       
       setTestMessage('✓ Connection successful!');
       setTimeout(() => setTestMessage(''), 3000);

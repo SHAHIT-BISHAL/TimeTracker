@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Moon, Sun, Bell, Save } from 'lucide-react';
 import './EnhancedSettings.css';
 
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+
 export default function EnhancedSettings() {
   const [settings, setSettings] = useState({
     hourly_rate: 0,
@@ -24,7 +26,7 @@ export default function EnhancedSettings() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:5000/api/users/profile', config);
+      const res = await axios.get(`${API_URL}/users/profile`, config);
       setSettings({
         hourly_rate: res.data.hourly_rate || 0,
         pay_cycle: res.data.pay_cycle || 'weekly',
@@ -47,7 +49,7 @@ export default function EnhancedSettings() {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
       await axios.put(
-        'http://localhost:5000/api/users/settings',
+        `${API_URL}/users/settings`,
         {
           hourly_rate: parseFloat(settings.hourly_rate),
           pay_cycle: settings.pay_cycle,

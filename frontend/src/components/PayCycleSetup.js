@@ -3,6 +3,8 @@ import axios from 'axios';
 import { Calendar } from 'lucide-react';
 import './PayCycleSetup.css';
 
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+
 export default function PayCycleSetup() {
   const [cycleType, setCycleType] = useState('weekly');
   const [customDay, setCustomDay] = useState(15);
@@ -17,7 +19,7 @@ export default function PayCycleSetup() {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const res = await axios.get('http://localhost:5000/api/paycycle-setup/config', config);
+      const res = await axios.get(`${API_URL}/paycycle-setup/config`, config);
       setCycleType(res.data.pay_cycle_type || 'weekly');
       setCustomDay(res.data.custom_day || 15);
       setLoading(false);
@@ -37,7 +39,7 @@ export default function PayCycleSetup() {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      await axios.post('http://localhost:5000/api/paycycle-setup/setup', {
+      await axios.post(`${API_URL}/paycycle-setup/setup`, {
         pay_cycle_type: cycleType,
         custom_day: cycleType === 'custom' ? customDay : null
       }, config);
