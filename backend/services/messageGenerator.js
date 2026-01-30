@@ -73,70 +73,39 @@ function generateTextMessage({
   totalExpenses,
   userName
 }) {
-  const today = new Date().toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
-
-  let message = `FORTNIGHTLY TIMESHEET SUBMISSION\n`;
-  message += `${'='.repeat(50)}\n\n`;
-
-  message += `Dear Hiring Manager,\n\n`;
-  message += `Please find below my timesheet for the fortnightly period:\n\n`;
-
-  message += `ENGAGEMENT DETAILS\n`;
-  message += `${'-'.repeat(50)}\n`;
-  message += `Client/Company: ${companyName}\n`;
-  message += `Period: ${forthnightLabel}\n`;
-  message += `Submitted: ${today}\n`;
-  message += `Contractor: ${userName}\n\n`;
-
-  message += `TIME SUMMARY\n`;
-  message += `${'-'.repeat(50)}\n`;
-  message += `Total Hours Worked: ${duration.display} (${duration.decimal} hours)\n`;
-  message += `Hourly Breakdown: ${Object.keys(dailyBreakdown).length} working days\n`;
+  let message = `Hi,\n`;
+  message += `Here's my timesheet for ${companyName}\n`;
+  message += `Period: ${forthnightLabel}\n\n`;
 
   if (Object.keys(dailyBreakdown).length > 0) {
-    message += `\nDAILY BREAKDOWN\n`;
-    message += `${'-'.repeat(50)}\n`;
+    message += `SHIFTS:\n`;
 
     for (const [date, minutes] of Object.entries(dailyBreakdown)) {
-      const dayDuration = formatDuration(minutes);
       const dateObj = new Date(date);
       const formattedDate = dateObj.toLocaleDateString('en-US', { 
         weekday: 'short', 
-        year: 'numeric', 
         month: 'short', 
         day: 'numeric' 
       });
+      const dayDuration = formatDuration(minutes);
       message += `${formattedDate}: ${dayDuration.display}\n`;
     }
   }
 
-  if (expenses.length > 0) {
-    message += `\nREIMBURSABLE EXPENSES\n`;
-    message += `${'-'.repeat(50)}\n`;
+  message += `Total Hours Worked: ${duration.display}\n`;
 
+  if (expenses.length > 0) {
     for (const expense of expenses) {
-      const expenseDate = new Date(expense.date).toLocaleDateString('en-US', { 
-        year: 'numeric', 
+      const dateObj = new Date(expense.date);
+      const expenseDate = dateObj.toLocaleDateString('en-US', { 
         month: 'short', 
         day: 'numeric' 
       });
-      message += `${expenseDate}: $${expense.amount.toFixed(2)} - ${expense.description}\n`;
+      message += `${expenseDate}: ${expense.description} - $${expense.amount.toFixed(2)}\n`;
     }
-
-    message += `\nTotal Expenses: $${totalExpenses.toFixed(2)}\n`;
   }
 
-  message += `\n${'='.repeat(50)}\n\n`;
-  message += `I confirm that the above hours and expenses are accurate and complete.\n`;
-  message += `Please review and process this timesheet at your earliest convenience.\n\n`;
-  message += `Should you require any additional information or clarification,\n`;
-  message += `please do not hesitate to contact me.\n\n`;
-  message += `Thank you for your attention to this matter.\n\n`;
-  message += `Best regards,\n${userName}`;
+  message += `Thank you`;
 
   return message;
 }
