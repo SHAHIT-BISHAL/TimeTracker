@@ -155,5 +155,3 @@ router.get('/verify-token', (req, res) => {
 });
 
 export default router;
-
-export default router;
