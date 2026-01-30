@@ -113,7 +113,7 @@ router.get('/summary', authenticateToken, async (req, res) => {
         name: company.name,
         manager_email: company.manager_email
       },
-      timeEntries: timeEntries.length,
+      timeEntries: timeEntries,
       totalMinutes,
       duration: formatDuration(totalMinutes),
       dailyBreakdown,

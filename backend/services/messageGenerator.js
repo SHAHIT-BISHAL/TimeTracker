@@ -69,6 +69,7 @@ function generateTextMessage({
   forthnightLabel,
   duration,
   dailyBreakdown,
+  timeEntries = [],
   expenses,
   totalExpenses,
   userName
@@ -77,7 +78,34 @@ function generateTextMessage({
   message += `Here's my timesheet for ${companyName}\n`;
   message += `Period: ${forthnightLabel}\n\n`;
 
-  if (Object.keys(dailyBreakdown).length > 0) {
+  if (timeEntries && timeEntries.length > 0) {
+    message += `SHIFTS:\n`;
+
+    // Group entries by date
+    const byDate = {};
+    for (const entry of timeEntries) {
+      const date = new Date(entry.clock_in).toISOString().split('T')[0];
+      if (!byDate[date]) byDate[date] = [];
+      byDate[date].push(entry);
+    }
+
+    // Display each date's shifts
+    for (const [date, entries] of Object.entries(byDate)) {
+      const dateObj = new Date(date);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      
+      for (const entry of entries) {
+        const clockIn = new Date(entry.clock_in).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        const clockOut = entry.clock_out ? new Date(entry.clock_out).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A';
+        const duration = entry.duration_minutes ? formatDuration(entry.duration_minutes).display : 'N/A';
+        message += `${formattedDate}: ${clockIn} - ${clockOut} - ${duration}\n`;
+      }
+    }
+  } else if (Object.keys(dailyBreakdown).length > 0) {
     message += `SHIFTS:\n`;
 
     for (const [date, minutes] of Object.entries(dailyBreakdown)) {
