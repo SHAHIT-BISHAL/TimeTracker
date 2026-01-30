@@ -32,12 +32,14 @@ export default function CompanySelector({
 
   const token = localStorage.getItem('token');
   const config = { headers: { Authorization: `Bearer ${token}` } };
-  
-  if (!isOpen) return null;
 
   useEffect(() => {
-    fetchCompanies();
-  }, []);
+    if (isOpen) {
+      fetchCompanies();
+    }
+  }, [isOpen]);
+  
+  if (!isOpen) return null;
 
   const fetchCompanies = async () => {
     try {
