@@ -4,7 +4,7 @@ import { Building2, Plus, Check, Lock } from 'lucide-react';
 import axios from 'axios';
 import './CompanySelector.css';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
 
 /**
  * CompanySelector Component
