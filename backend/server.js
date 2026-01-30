@@ -224,6 +224,12 @@ async function initializeDatabase() {
 
   const migrations = [
     'ALTER TABLE companies ADD COLUMN IF NOT EXISTS user_id INTEGER',
+    'ALTER TABLE companies ADD COLUMN IF NOT EXISTS description TEXT',
+    'ALTER TABLE companies ADD COLUMN IF NOT EXISTS industry TEXT',
+    'ALTER TABLE companies ADD COLUMN IF NOT EXISTS pay_rate DOUBLE PRECISION DEFAULT 0',
+    'ALTER TABLE companies ADD COLUMN IF NOT EXISTS manager_email TEXT',
+    'ALTER TABLE companies ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now()',
+    'ALTER TABLE companies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now()',
     `DO $$
     BEGIN
       IF NOT EXISTS (
