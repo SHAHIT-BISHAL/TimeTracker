@@ -30,9 +30,6 @@ export default function CompanySelector({
     manager_email: ''
   });
 
-  const token = localStorage.getItem('token');
-  const config = { headers: { Authorization: `Bearer ${token}` } };
-
   useEffect(() => {
     if (isOpen) {
       fetchCompanies();
@@ -44,11 +41,18 @@ export default function CompanySelector({
   const fetchCompanies = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/companies`, config);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${API_URL}/companies`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setCompanies(response.data || []);
       setError('');
     } catch (err) {
-      setError('Failed to load companies');
+      if (err.response?.status === 401) {
+        setError('❌ Invalid or expired token');
+      } else {
+        setError('❌ Failed to load companies');
+      }
       console.error(err);
     } finally {
       setLoading(false);
@@ -81,7 +85,10 @@ export default function CompanySelector({
 
     try {
       setLoading(true);
-      const response = await axios.post(`${API_URL}/companies`, formData, config);
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${API_URL}/companies`, formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
       setCompanies([...companies, response.data]);
       setFormData({
