@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings, Building2, LogOut, Menu, X } from 'lucide-react';
+import { Settings, Building2, LogOut, Menu, X, ChevronDown } from 'lucide-react';
 import AnimatedClockLogo from './AnimatedClockLogo';
 import { getGreeting, formatAEDT } from '../utils/timeUtils';
 
@@ -53,6 +53,7 @@ const AppHeader = memo(({
   const navigate = useNavigate();
   const location = useLocation();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [greeting, setGreeting] = useState('');
 
@@ -135,20 +136,40 @@ const AppHeader = memo(({
               </motion.button>
             )}
 
-            {/* Company Indicator */}
+            {/* Company Selector Dropdown */}
             {selectedCompany && (
-              <motion.button
-                onClick={onCompanyClick}
-                className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm font-medium"
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.25, duration: 0.3 }}
-              >
-                <Building2 size={16} />
-                <span className="max-w-[150px] truncate">{selectedCompany.name}</span>
-              </motion.button>
+              <div className="relative">
+                <motion.button
+                  onClick={() => {
+                    setShowCompanyDropdown(!showCompanyDropdown);
+                    if (!showCompanyDropdown) {
+                      onCompanyClick();
+                    }
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm font-medium"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.25, duration: 0.3 }}
+                >
+                  <Building2 size={16} />
+                  <span className="max-w-[120px] truncate">{selectedCompany.name}</span>
+                  <ChevronDown size={14} className={`transition-transform ${showCompanyDropdown ? 'rotate-180' : ''}`} />
+                </motion.button>
+                
+                {/* Dropdown hint */}
+                {showCompanyDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -5 }}
+                    className="absolute right-0 mt-1 text-xs text-gray-600 whitespace-nowrap bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200"
+                  >
+                    Click to switch company
+                  </motion.div>
+                )}
+              </div>
             )}
 
             {/* Settings Button */}
