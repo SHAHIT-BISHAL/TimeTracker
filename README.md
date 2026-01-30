@@ -230,6 +230,23 @@ environment:
 
 ## Logs & Troubleshooting
 
+### Connection Diagnostics
+
+The application includes built-in connection diagnostics to help identify network and server issues:
+
+- **Real-time Server Status**: Login and Register pages show whether the server is accessible
+- **Automatic Health Checks**: The frontend checks server availability every 30 seconds
+- **Helpful Error Messages**: Get specific hints about what's wrong and how to fix it
+
+**For detailed troubleshooting guide, see:** [CONNECTION_DIAGNOSTICS_GUIDE.md](CONNECTION_DIAGNOSTICS_GUIDE.md)
+
+This guide covers:
+- How to use the connection status indicator
+- Common connection errors and solutions
+- Testing the `/api/health` endpoint
+- Debugging network issues
+- Configuration options for different deployment environments
+
 ### View Logs
 ```bash
 # All services
