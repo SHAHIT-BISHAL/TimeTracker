@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, LogIn, LogOut, Menu, Settings, BarChart3, FileText } from 'lucide-react';
+import { Clock, LogIn, LogOut, Menu, Settings, BarChart3, FileText, X, LogOut as LogOutIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { timeService } from '../services/api';
+import ModernManualEntryForm from './ModernManualEntryForm';
+import ModernSettings from './ModernSettings';
+import ModernAnalytics from './ModernAnalytics';
 
 const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
 
@@ -12,6 +16,7 @@ export default function ModernDashboard() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('clock');
   const [showMenu, setShowMenu] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchStatus();
@@ -69,6 +74,12 @@ export default function ModernDashboard() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -82,19 +93,33 @@ export default function ModernDashboard() {
     visible: { opacity: 1, y: 0 }
   };
 
-  const pulseVariants = {
-    pulse: {
-      scale: [1, 1.02, 1],
-      transition: { duration: 2, repeat: Infinity }
+  // Render active tab content
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'entries':
+        return <ModernManualEntryForm onEntryAdded={fetchStatus} />;
+      case 'analytics':
+        return <ModernAnalytics />;
+      case 'settings':
+        return <ModernSettings />;
+      default:
+        return null;
     }
   };
 
-  const timerVariants = {
-    animate: {
-      scale: [1, 1.01, 1],
-      transition: { duration: 2, repeat: Infinity }
-    }
-  };
+  if (activeTab !== 'clock') {
+    return (
+      <div>
+        <button
+          onClick={() => setActiveTab('clock')}
+          className="fixed top-6 left-6 z-50 p-2 bg-white/10 hover:bg-white/20 rounded-xl transition-colors backdrop-blur-md"
+        >
+          <X className="w-6 h-6 text-white" />
+        </button>
+        {renderTabContent()}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen gradient-bg text-white">
@@ -122,6 +147,47 @@ export default function ModernDashboard() {
             <Menu className="w-6 h-6" />
           </button>
         </div>
+
+        {/* Mobile Menu */}
+        {showMenu && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="border-t border-white/10 bg-black/40 backdrop-blur-md"
+          >
+            <div className="max-w-4xl mx-auto px-4 py-4 flex gap-2 flex-col">
+              <button
+                onClick={() => { setActiveTab('entries'); setShowMenu(false); }}
+                className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm"
+              >
+                <FileText className="w-4 h-4 inline mr-2" />
+                Manual Entries
+              </button>
+              <button
+                onClick={() => { setActiveTab('analytics'); setShowMenu(false); }}
+                className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm"
+              >
+                <BarChart3 className="w-4 h-4 inline mr-2" />
+                Analytics
+              </button>
+              <button
+                onClick={() => { setActiveTab('settings'); setShowMenu(false); }}
+                className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm"
+              >
+                <Settings className="w-4 h-4 inline mr-2" />
+                Settings
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 hover:bg-red-500/20 rounded-lg transition-colors text-sm text-red-300"
+              >
+                <LogOutIcon className="w-4 h-4 inline mr-2" />
+                Logout
+              </button>
+            </div>
+          </motion.div>
+        )}
       </header>
 
       {/* Main Content */}
@@ -158,7 +224,8 @@ export default function ModernDashboard() {
             {/* Large Timer Display */}
             <motion.div 
               variants={itemVariants}
-              animate={isClockedIn ? timerVariants.animate : {}}
+              animate={isClockedIn ? { scale: [1, 1.01, 1] } : {}}
+              transition={{ duration: 2, repeat: isClockedIn ? Infinity : 0 }}
               className="mb-12"
             >
               <div className={`text-8xl font-bold font-mono tracking-wider ${
