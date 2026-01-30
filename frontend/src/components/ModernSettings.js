@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Moon, Sun, DollarSign, Calendar, Bell, Save, AlertCircle } from 'lucide-react';
+import { Settings, Moon, Sun, DollarSign, Calendar, Bell, Save, AlertCircle, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
 
-export default function ModernSettings() {
+export default function ModernSettings({ onClose }) {
   const [settings, setSettings] = useState({
     hourly_rate: 0,
     pay_cycle: 'weekly',
@@ -103,14 +103,25 @@ export default function ModernSettings() {
           className="space-y-8"
         >
           {/* Header */}
-          <motion.div variants={itemVariants} className="flex items-center gap-4 mb-8">
-            <div className="p-3 bg-gradient-to-br from-amber-400 to-orange-400 rounded-xl">
-              <Settings className="w-8 h-8 text-white" />
+          <motion.div variants={itemVariants} className="flex items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-gradient-to-br from-amber-400 to-orange-400 rounded-xl">
+                <Settings className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold">Settings</h1>
+                <p className="text-gray-400 text-sm">Customize your experience</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl font-bold">Settings</h1>
-              <p className="text-gray-400 text-sm">Customize your experience</p>
-            </div>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </button>
+            )}
           </motion.div>
 
           {/* Message */}

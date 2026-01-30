@@ -40,20 +40,13 @@ router.get('/', authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const companies = await new Promise((resolve, reject) => {
-      const db = global.db;
-      db.all(
-        `SELECT c.* FROM companies c 
-         JOIN user_companies uc ON c.id = uc.company_id 
-         WHERE c.user_id = ? OR uc.user_id = ?
-         ORDER BY c.created_at DESC`,
-        [userId, userId],
-        (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows || []);
-        }
-      );
-    });
+    const companies = await dbAll(
+      `SELECT c.* FROM companies c 
+       JOIN user_companies uc ON c.id = uc.company_id 
+       WHERE c.user_id = ? OR uc.user_id = ?
+       ORDER BY c.created_at DESC`,
+      [userId, userId]
+    );
     res.json(companies);
   } catch (err) {
     res.status(500).json({ error: err.message });

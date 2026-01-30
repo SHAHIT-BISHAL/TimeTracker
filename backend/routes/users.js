@@ -1,5 +1,5 @@
 import express from 'express';
-import { dbGet, dbRun } from '../server.js';
+import { dbGet, dbRun, dbAll } from '../server.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -132,17 +132,10 @@ router.get('/company', authenticateToken, async (req, res) => {
     }
 
     // Get all users in the same company
-    const users = await new Promise((resolve, reject) => {
-      const db = global.db;
-      db.all(
-        'SELECT id, username, email FROM users WHERE current_company_id = ? ORDER BY username',
-        [user.current_company_id],
-        (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows || []);
-        }
-      );
-    });
+    const users = await dbAll(
+      'SELECT id, username, email FROM users WHERE current_company_id = ? ORDER BY username',
+      [user.current_company_id]
+    );
 
     res.json({ users, company_id: user.current_company_id });
   } catch (err) {

@@ -222,9 +222,9 @@ export default function ModernDashboard() {
           />
         );
       case 'analytics':
-        return <ModernAnalytics />;
+        return <ModernAnalytics onClose={() => setActiveView('clock')} />;
       case 'settings':
-        return <ModernSettings />;
+        return <ModernSettings onClose={() => setActiveView('clock')} />;
       case 'clock':
       default:
         return (

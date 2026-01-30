@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, TrendingUp, Clock, AlertCircle } from 'lucide-react';
+import { BarChart3, TrendingUp, Clock, AlertCircle, ArrowLeft } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
 const COLORS = ['#0ea5e9', '#06b6d4', '#14b8a6', '#f59e0b', '#ef4444'];
 
-export default function ModernAnalytics() {
+export default function ModernAnalytics({ onClose }) {
   const [weeklyData, setWeeklyData] = useState([]);
   const [projectData, setProjectData] = useState([]);
   const [stats, setStats] = useState({ totalHours: 0, avgPerDay: 0, overtimeHours: 0 });
