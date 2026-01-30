@@ -131,11 +131,17 @@ router.post('/clock-out', authenticateToken, async (req, res) => {
 // Get time entries
 router.get('/entries', authenticateToken, async (req, res) => {
   const userId = req.user.id;
-  const { startDate, endDate } = req.query;
+  const { startDate, endDate, company_id } = req.query;
 
   try {
     let sql = 'SELECT * FROM time_entries WHERE user_id = ?';
     let params = [userId];
+
+    // Filter by company if provided
+    if (company_id) {
+      sql += ' AND company_id = ?';
+      params.push(company_id);
+    }
 
     if (startDate && endDate) {
       sql += ' AND clock_in >= ? AND clock_in <= ?';

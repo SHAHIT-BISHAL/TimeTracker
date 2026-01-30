@@ -7,21 +7,24 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
 const COLORS = ['#0ea5e9', '#06b6d4', '#14b8a6', '#f59e0b', '#ef4444'];
 
-export default function ModernAnalytics({ onClose }) {
+export default function ModernAnalytics({ onClose, selectedCompanyId }) {
   const [weeklyData, setWeeklyData] = useState([]);
   const [projectData, setProjectData] = useState([]);
   const [stats, setStats] = useState({ totalHours: 0, avgPerDay: 0, overtimeHours: 0 });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAnalytics();
-  }, []);
+    if (selectedCompanyId) {
+      fetchAnalytics();
+    }
+  }, [selectedCompanyId]);
 
   const fetchAnalytics = async () => {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const entriesRes = await axios.get(`${API_URL}/time/entries`, config);
+      const params = selectedCompanyId ? `?company_id=${selectedCompanyId}` : '';
+      const entriesRes = await axios.get(`${API_URL}/time/entries${params}`, config);
       const entries = entriesRes.data;
 
       processWeeklyData(entries);

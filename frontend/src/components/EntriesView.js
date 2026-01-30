@@ -9,7 +9,7 @@ const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostn
 /**
  * Entries view - Shows list of time entries with add/edit/delete functionality
  */
-export default function EntriesView({ onClose }) {
+export default function EntriesView({ onClose, selectedCompanyId }) {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -18,15 +18,18 @@ export default function EntriesView({ onClose }) {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetchEntries();
-  }, []);
+    if (selectedCompanyId) {
+      fetchEntries();
+    }
+  }, [selectedCompanyId]);
 
   const fetchEntries = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.get(`${API_URL}/time/entries`, config);
+      const params = selectedCompanyId ? `?company_id=${selectedCompanyId}` : '';
+      const response = await axios.get(`${API_URL}/time/entries${params}`, config);
       setEntries(response.data || []);
     } catch (err) {
       console.error('Error fetching entries:', err);

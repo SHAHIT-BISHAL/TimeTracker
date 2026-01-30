@@ -219,10 +219,11 @@ export default function ModernDashboard() {
         return (
           <EntriesView
             onClose={() => setActiveView('clock')}
+            selectedCompanyId={selectedCompanyId}
           />
         );
       case 'analytics':
-        return <ModernAnalytics onClose={() => setActiveView('clock')} />;
+        return <ModernAnalytics onClose={() => setActiveView('clock')} selectedCompanyId={selectedCompanyId} />;
       case 'settings':
         return <ModernSettings onClose={() => setActiveView('clock')} />;
       case 'clock':
