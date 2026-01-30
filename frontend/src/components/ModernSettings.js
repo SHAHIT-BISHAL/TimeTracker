@@ -42,7 +42,7 @@ export default function ModernSettings({ onClose }) {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      await axios.put(
+      const response = await axios.put(
         `${API_URL}/users/settings`,
         {
           hourly_rate: parseFloat(settings.hourly_rate),
@@ -61,9 +61,12 @@ export default function ModernSettings({ onClose }) {
       localStorage.setItem('theme', settings.theme);
 
       setMessage('✅ Settings saved successfully');
+      console.log('Settings saved:', response.data);
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage('❌ Error saving settings');
+      console.error('Error saving settings:', error);
+      const errorMsg = error.response?.data?.error || error.message || 'Failed to save settings';
+      setMessage(`❌ Error: ${errorMsg}`);
       setTimeout(() => setMessage(''), 3000);
     }
   };

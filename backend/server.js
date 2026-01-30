@@ -116,6 +116,7 @@ async function initializeDatabase() {
       pay_cycle_type TEXT DEFAULT 'weekly',
       pay_cycle_custom_day INTEGER,
       theme TEXT DEFAULT 'light',
+      break_reminder_minutes INTEGER DEFAULT 120,
       current_company_id INTEGER REFERENCES companies(id),
       profile_setup_complete BOOLEAN DEFAULT false,
       created_at TIMESTAMPTZ DEFAULT now(),
@@ -231,6 +232,7 @@ async function initializeDatabase() {
     'ALTER TABLE companies ADD COLUMN IF NOT EXISTS manager_email TEXT',
     'ALTER TABLE companies ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now()',
     'ALTER TABLE companies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now()',
+    'ALTER TABLE users ADD COLUMN IF NOT EXISTS break_reminder_minutes INTEGER DEFAULT 120',
     `DO $$
     BEGIN
       IF NOT EXISTS (

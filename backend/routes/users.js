@@ -27,16 +27,16 @@ router.get('/profile', authenticateToken, async (req, res) => {
 // Update user settings
 router.put('/settings', authenticateToken, async (req, res) => {
   const userId = req.user.id;
-  const { hourly_rate, pay_cycle } = req.body;
+  const { hourly_rate, pay_cycle, theme, break_reminder_minutes } = req.body;
 
   try {
     await dbRun(
-      'UPDATE users SET hourly_rate = ?, pay_cycle = ?, updated_at = now() WHERE id = ?',
-      [hourly_rate, pay_cycle, userId]
+      'UPDATE users SET hourly_rate = ?, pay_cycle_type = ?, theme = ?, break_reminder_minutes = ?, updated_at = now() WHERE id = ?',
+      [hourly_rate || 0, pay_cycle || 'weekly', theme || 'light', break_reminder_minutes || 120, userId]
     );
 
     const user = await dbGet(
-      'SELECT id, username, email, hourly_rate, pay_cycle FROM users WHERE id = ?',
+      'SELECT id, username, email, hourly_rate, pay_cycle_type, theme, break_reminder_minutes FROM users WHERE id = ?',
       [userId]
     );
 
