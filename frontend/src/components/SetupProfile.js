@@ -3,6 +3,9 @@ import axios from 'axios';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 import './SetupProfile.css';
 
+// Use dynamic API URL (same as in api.js)
+const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+
 export default function SetupProfile({ onSetupComplete }) {
   const [step, setStep] = useState(1); // 1 = Company, 2 = Hourly Rate, 3 = Pay Cycle
   const [companies, setCompanies] = useState([]);
@@ -23,7 +26,7 @@ export default function SetupProfile({ onSetupComplete }) {
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.get('http://localhost:5000/api/companies', config);
+      const response = await axios.get(`${API_URL}/companies`, config);
       setCompanies(response.data);
       if (response.data.length > 0) {
         setSelectedCompany(response.data[0].id);
@@ -45,7 +48,7 @@ export default function SetupProfile({ onSetupComplete }) {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const response = await axios.post(
-        'http://localhost:5000/api/companies',
+        `${API_URL}/companies`,
         { name: newCompany, description: '' },
         config
       );
@@ -68,7 +71,7 @@ export default function SetupProfile({ onSetupComplete }) {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
       await axios.post(
-        `http://localhost:5000/api/companies/${companyId}/switch`,
+        `${API_URL}/companies/${companyId}/switch`,
         {},
         config
       );
@@ -108,14 +111,14 @@ export default function SetupProfile({ onSetupComplete }) {
 
       // Update hourly rate in user_companies
       await axios.put(
-        `http://localhost:5000/api/companies/${selectedCompany}/hourly-rate`,
+        `${API_URL}/companies/${selectedCompany}/hourly-rate`,
         { hourly_rate: parseFloat(hourlyRate) },
         config
       );
 
       // Setup pay cycle
       await axios.post(
-        'http://localhost:5000/api/paycycle-setup/setup',
+        `${API_URL}/paycycle-setup/setup`,
         {
           pay_cycle_type: payCycleType,
           custom_day: payCycleType === 'custom' ? parseInt(customDay) : null
@@ -125,7 +128,7 @@ export default function SetupProfile({ onSetupComplete }) {
 
       // Mark profile as setup complete
       await axios.put(
-        'http://localhost:5000/api/users/profile/setup-complete',
+        `${API_URL}/users/profile/setup-complete`,
         {},
         config
       );
