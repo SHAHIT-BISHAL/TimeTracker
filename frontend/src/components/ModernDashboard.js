@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Menu, X, LogOut as LogOutIcon, Building2, MessageSquare, Mail } from 'lucide-react';
+import { Clock, Menu, X, LogOut as LogOutIcon, Building2, MessageSquare, Mail, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { timeService } from '../services/api';
 import ClockInDashboard from './ClockInDashboard';
@@ -12,6 +12,8 @@ import EntriesView from './EntriesView';
 import CompanyManager from './CompanyManager';
 import MessagingCenter from './MessagingCenter';
 import EmailSettingsModal from './EmailSettingsModal';
+import CompanySelector from './CompanySelector';
+import MessagePreview from './MessagePreview';
 
 /**
  * Main dashboard component
@@ -28,6 +30,15 @@ export default function ModernDashboard() {
   const [showCompanyModal, setShowCompanyModal] = useState(false);
   const [showMessagingModal, setShowMessagingModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  
+  // Company selection state
+  const [selectedCompanyId, setSelectedCompanyId] = useState(
+    localStorage.getItem('selectedCompanyId') || null
+  );
+  const [showCompanySelector, setShowCompanySelector] = useState(!selectedCompanyId);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [showMessagePreview, setShowMessagePreview] = useState(false);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -66,13 +77,35 @@ export default function ModernDashboard() {
   };
 
   const handleClockIn = async () => {
+    if (!selectedCompanyId) {
+      alert('⚠️ Company Selection Required\n\nPlease select a company before clocking in. This ensures your time is tracked correctly.');
+      setShowCompanySelector(true);
+      return;
+    }
+    
     setLoading(true);
     try {
-      await timeService.clockIn({});
+      const response = await timeService.clockIn({ company_id: selectedCompanyId });
       await fetchStatus();
+      
+      // Show success message
+      if (response.data?.success) {
+        // Optional: Add a toast notification here
+        console.log('✅ Successfully clocked in');
+      }
     } catch (err) {
       console.error('Clock in error:', err);
-      alert('Error clocking in');
+      const errorMessage = err.response?.data?.error || 'Failed to clock in. Please try again.';
+      const errorCode = err.response?.data?.code;
+      
+      if (errorCode === 'NO_COMPANY_SELECTED' || errorCode === 'INVALID_COMPANY') {
+        alert(`⚠️ Company Issue\n\n${errorMessage}\n\nPlease select a valid company.`);
+        setShowCompanySelector(true);
+      } else if (errorCode === 'ALREADY_CLOCKED_IN') {
+        alert(`⏰ Already Clocked In\n\n${errorMessage}`);
+      } else {
+        alert(`❌ Error\n\n${errorMessage}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -81,11 +114,28 @@ export default function ModernDashboard() {
   const handleClockOut = async () => {
     setLoading(true);
     try {
-      await timeService.clockOut();
+      const response = await timeService.clockOut();
       await fetchStatus();
+      
+      // Show duration summary
+      if (response.data?.duration) {
+        const { display } = response.data.duration;
+        console.log(`✅ Clocked out successfully. Session duration: ${display}`);
+        // Optional: Add a toast notification with duration
+      }
     } catch (err) {
       console.error('Clock out error:', err);
-      alert('Error clocking out');
+      const errorMessage = err.response?.data?.error || 'Failed to clock out. Please try again.';
+      const errorCode = err.response?.data?.code;
+      
+      if (errorCode === 'NO_ACTIVE_ENTRY') {
+        alert(`⚠️ No Active Session\n\n${errorMessage}`);
+      } else if (errorCode === 'NO_COMPANY_SELECTED') {
+        alert(`⚠️ Company Issue\n\n${errorMessage}\n\nPlease select a company.`);
+        setShowCompanySelector(true);
+      } else {
+        alert(`❌ Error\n\n${errorMessage}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -97,12 +147,63 @@ export default function ModernDashboard() {
     navigate('/login');
   };
 
+  const handleCompanySelect = async (companyId) => {
+    setSelectedCompanyId(companyId);
+    localStorage.setItem('selectedCompanyId', companyId);
+    setShowCompanySelector(false);
+    
+    // Update user's current_company_id in backend
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/current-company`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ company_id: companyId })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update current company');
+      }
+    } catch (err) {
+      console.error('Error updating current company:', err);
+      alert('⚠️ Company selection saved locally, but failed to sync with server.\n\nYour selection will work, but may not persist across devices.');
+    }
+    
+    // Fetch company details
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/companies/${companyId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const company = await response.json();
+        setSelectedCompany(company);
+        console.log(`✅ Company selected: ${company.name}`);
+      }
+    } catch (err) {
+      console.error('Error fetching company details:', err);
+      // Non-critical error, continue anyway
+    }
+  };
+
   const handleNavigate = (view) => {
     if (view === 'entries') {
       setActiveView('entries');
       setShowMenu(false);
     } else if (view === 'expense') {
+      if (!selectedCompanyId) {
+        alert('⚠️ Company Selection Required\n\nPlease select a company before adding expenses.\n\nThis ensures expenses are tracked to the correct client.');
+        setShowCompanySelector(true);
+        return;
+      }
       setShowExpenseModal(true);
+      setShowMenu(false);
     } else {
       setActiveView(view);
       setShowMenu(false);
@@ -132,6 +233,8 @@ export default function ModernDashboard() {
             onClockIn={handleClockIn}
             onClockOut={handleClockOut}
             onNavigate={handleNavigate}
+            isLocked={!selectedCompanyId}
+            selectedCompany={selectedCompany}
           />
         );
     }
@@ -191,13 +294,40 @@ export default function ModernDashboard() {
                   <hr className="border-white/10 my-2" />
                   <button
                     onClick={() => {
+                      setShowCompanySelector(true);
+                      setShowMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
+                  >
+                    <Building2 className="w-4 h-4" />
+                    {selectedCompany ? `Company: ${selectedCompany.name}` : 'Select Company'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!selectedCompanyId) {
+                        alert('Please select a company first');
+                        setShowCompanySelector(true);
+                        setShowMenu(false);
+                        return;
+                      }
+                      setShowMessagePreview(true);
+                      setShowMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Generate Timesheet
+                  </button>
+                  <hr className="border-white/10 my-2" />
+                  <button
+                    onClick={() => {
                       setShowCompanyModal(true);
                       setShowMenu(false);
                     }}
                     className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
                   >
                     <Building2 className="w-4 h-4" />
-                    Companies
+                    Manage Companies
                   </button>
                   <button
                     onClick={() => {
@@ -278,6 +408,7 @@ export default function ModernDashboard() {
         onExpenseAdded={() => {
           // Refresh data if needed
         }}
+        companyId={selectedCompanyId}
       />
       
       <CompanyManager
@@ -297,6 +428,27 @@ export default function ModernDashboard() {
       <EmailSettingsModal
         isOpen={showEmailModal}
         onClose={() => setShowEmailModal(false)}
+      />
+      
+      <CompanySelector
+        isOpen={showCompanySelector}
+        onClose={() => {
+          if (selectedCompanyId) {
+            setShowCompanySelector(false);
+          }
+        }}
+        selectedCompanyId={selectedCompanyId}
+        onCompanySelect={handleCompanySelect}
+        isLocked={!selectedCompanyId}
+      />
+      
+      <MessagePreview
+        isOpen={showMessagePreview}
+        onClose={() => setShowMessagePreview(false)}
+        forthnightDate={new Date()}
+        companyId={selectedCompanyId}
+        companyName={selectedCompany?.name}
+        companyEmail={selectedCompany?.manager_email}
       />
     </div>
   );

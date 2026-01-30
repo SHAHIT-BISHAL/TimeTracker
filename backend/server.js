@@ -95,9 +95,12 @@ async function initializeDatabase() {
   const createCompaniesTable = `
     CREATE TABLE IF NOT EXISTS companies (
       id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
       name TEXT NOT NULL,
       description TEXT,
       industry TEXT,
+      pay_rate DOUBLE PRECISION DEFAULT 0,
+      manager_email TEXT,
       created_at TIMESTAMPTZ DEFAULT now(),
       updated_at TIMESTAMPTZ DEFAULT now()
     );
@@ -192,6 +195,19 @@ async function initializeDatabase() {
     );
   `;
 
+  const createEmailLogTable = `
+    CREATE TABLE IF NOT EXISTS email_log (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id),
+      company_id INTEGER NOT NULL REFERENCES companies(id),
+      recipient TEXT NOT NULL,
+      subject TEXT,
+      status TEXT DEFAULT 'sent',
+      sent_at TIMESTAMPTZ DEFAULT now(),
+      created_at TIMESTAMPTZ DEFAULT now()
+    );
+  `;
+
   const createIndexes = [
     'CREATE INDEX IF NOT EXISTS idx_time_entries_user_id ON time_entries(user_id)',
     'CREATE INDEX IF NOT EXISTS idx_time_entries_company_id ON time_entries(company_id)',
@@ -204,7 +220,7 @@ async function initializeDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_user_companies_company ON user_companies(company_id)'
   ];
 
-  const tables = [createCompaniesTable, createUsersTable, createUserCompaniesTable, createTimeEntriesTable, createBreaksTable, createPayCyclesTable, createEmailSettingsTable];
+  const tables = [createCompaniesTable, createUsersTable, createUserCompaniesTable, createTimeEntriesTable, createBreaksTable, createPayCyclesTable, createEmailSettingsTable, createEmailLogTable];
 
   try {
     for (const stmt of tables) {
@@ -236,6 +252,7 @@ import emailSettingsRoutes from './routes/emailSettings.js';
 import payCycleSetupRoutes from './routes/payCycleSetup.js';
 import expensesRoutes from './routes/expenses.js';
 import messagesRoutes from './routes/messages.js';
+import forthnightlyRoutes from './routes/fortnightly.js';
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -250,6 +267,7 @@ app.use('/api/manual-entries', manualEntriesRoutes);
 app.use('/api/email-settings', emailSettingsRoutes);
 app.use('/api/expenses', expensesRoutes);
 app.use('/api/messages', messagesRoutes);
+app.use('/api/fortnightly', forthnightlyRoutes);
 
 const PORT = process.env.PORT || 5000;
 

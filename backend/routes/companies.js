@@ -6,7 +6,7 @@ const router = express.Router();
 
 // Create a new company
 router.post('/', authenticateToken, async (req, res) => {
-  const { name, description, industry } = req.body;
+  const { name, description, industry, pay_rate, manager_email } = req.body;
   const userId = req.user.id;
 
   if (!name) {
@@ -15,14 +15,14 @@ router.post('/', authenticateToken, async (req, res) => {
 
   try {
     const result = await dbRun(
-      'INSERT INTO companies (name, description, industry) VALUES (?, ?, ?)',
-      [name, description || null, industry || null]
+      'INSERT INTO companies (user_id, name, description, industry, pay_rate, manager_email) VALUES (?, ?, ?, ?, ?, ?)',
+      [userId, name, description || null, industry || null, pay_rate || 0, manager_email || null]
     );
 
-    // Add user to company
+    // Add user to company with owner role
     await dbRun(
       'INSERT INTO user_companies (user_id, company_id, hourly_rate, role) VALUES (?, ?, ?, ?)',
-      [userId, result.id, 0, 'owner']
+      [userId, result.id, pay_rate || 0, 'owner']
     );
 
     // Set as current company
@@ -40,13 +40,20 @@ router.get('/', authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const companies = await dbAll(
-      `SELECT c.* FROM companies c 
-       JOIN user_companies uc ON c.id = uc.company_id 
-       WHERE uc.user_id = ?
-       ORDER BY c.created_at DESC`,
-      [userId]
-    );
+    const companies = await new Promise((resolve, reject) => {
+      const db = global.db;
+      db.all(
+        `SELECT c.* FROM companies c 
+         JOIN user_companies uc ON c.id = uc.company_id 
+         WHERE c.user_id = ? OR uc.user_id = ?
+         ORDER BY c.created_at DESC`,
+        [userId, userId],
+        (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows || []);
+        }
+      );
+    });
     res.json(companies);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -86,7 +93,7 @@ router.get('/:companyId', authenticateToken, async (req, res) => {
 // Update company
 router.put('/:companyId', authenticateToken, async (req, res) => {
   const { companyId } = req.params;
-  const { name, description, industry } = req.body;
+  const { name, description, industry, pay_rate, manager_email } = req.body;
   const userId = req.user.id;
 
   try {
@@ -101,8 +108,8 @@ router.put('/:companyId', authenticateToken, async (req, res) => {
     }
 
     await dbRun(
-      'UPDATE companies SET name = ?, description = ?, industry = ?, updated_at = now() WHERE id = ?',
-      [name, description, industry, companyId]
+      'UPDATE companies SET name = ?, description = ?, industry = ?, pay_rate = ?, manager_email = ?, updated_at = now() WHERE id = ?',
+      [name, description, industry, pay_rate || 0, manager_email || null, companyId]
     );
 
     const company = await dbGet('SELECT * FROM companies WHERE id = ?', [companyId]);

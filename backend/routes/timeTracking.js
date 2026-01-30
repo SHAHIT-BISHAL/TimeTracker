@@ -18,16 +18,37 @@ router.post('/clock-in', authenticateToken, async (req, res) => {
     }
 
     if (!companyId) {
-      return res.status(400).json({ error: 'Company not selected' });
+      return res.status(400).json({ 
+        error: 'Please select a company before clocking in',
+        code: 'NO_COMPANY_SELECTED'
+      });
     }
 
+    // Verify user owns the company
+    const company = await dbGet(
+      'SELECT id FROM companies WHERE id = ? AND user_id = ?',
+      [companyId, userId]
+    );
+
+    if (!company) {
+      return res.status(403).json({ 
+        error: 'You do not have access to this company',
+        code: 'INVALID_COMPANY'
+      });
+    }
+
+    // Check for existing active clock-in
     const activeEntry = await dbGet(
       'SELECT * FROM time_entries WHERE user_id = ? AND clock_out IS NULL',
       [userId]
     );
 
     if (activeEntry) {
-      return res.status(400).json({ error: 'Already clocked in' });
+      return res.status(400).json({ 
+        error: 'You are already clocked in. Please clock out first.',
+        code: 'ALREADY_CLOCKED_IN',
+        activeEntry
+      });
     }
 
     const result = await dbRun(
@@ -38,11 +59,16 @@ router.post('/clock-in', authenticateToken, async (req, res) => {
     const entry = await dbGet('SELECT * FROM time_entries WHERE id = ?', [result.id]);
 
     res.status(201).json({ 
-      message: 'Clocked in successfully',
+      success: true,
+      message: 'Successfully clocked in',
       entry
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Clock-in error:', err);
+    res.status(500).json({ 
+      error: 'Failed to clock in. Please try again.',
+      code: 'SERVER_ERROR'
+    });
   }
 });
 
@@ -52,19 +78,37 @@ router.post('/clock-out', authenticateToken, async (req, res) => {
 
   try {
     const user = await dbGet('SELECT current_company_id FROM users WHERE id = ?', [userId]);
+    
+    if (!user?.current_company_id) {
+      return res.status(400).json({ 
+        error: 'No company selected',
+        code: 'NO_COMPANY_SELECTED'
+      });
+    }
+
     const entry = await dbGet(
       'SELECT * FROM time_entries WHERE user_id = ? AND company_id = ? AND clock_out IS NULL ORDER BY clock_in DESC LIMIT 1',
       [userId, user.current_company_id]
     );
 
     if (!entry) {
-      return res.status(400).json({ error: 'No active clock in found' });
+      return res.status(400).json({ 
+        error: 'No active clock-in found. Please clock in first.',
+        code: 'NO_ACTIVE_ENTRY'
+      });
     }
 
-    // Use ISO8601 UTC timestamps consistently to avoid timezone parsing issues
+    // Calculate duration with validation
     const now = new Date();
     const clockIn = new Date(entry.clock_in);
     const durationMinutes = Math.floor((now - clockIn) / 60000);
+
+    if (durationMinutes < 0) {
+      return res.status(400).json({ 
+        error: 'Invalid time entry detected',
+        code: 'INVALID_DURATION'
+      });
+    }
 
     await dbRun(
       'UPDATE time_entries SET clock_out = now(), duration_minutes = ? WHERE id = ?',
@@ -74,11 +118,21 @@ router.post('/clock-out', authenticateToken, async (req, res) => {
     const updatedEntry = await dbGet('SELECT * FROM time_entries WHERE id = ?', [entry.id]);
 
     res.json({ 
-      message: 'Clocked out successfully',
-      entry: updatedEntry
+      success: true,
+      message: 'Successfully clocked out',
+      entry: updatedEntry,
+      duration: {
+        minutes: durationMinutes,
+        hours: Math.floor(durationMinutes / 60),
+        display: `${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m`
+      }
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Clock-out error:', err);
+    res.status(500).json({ 
+      error: 'Failed to clock out. Please try again.',
+      code: 'SERVER_ERROR'
+    });
   }
 });
 

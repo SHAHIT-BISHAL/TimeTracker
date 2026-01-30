@@ -1,6 +1,7 @@
 import express from 'express';
 import { dbRun, dbGet } from '../server.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { initializeTransporter, testSMTPConnection } from '../services/emailService.js';
 
 const router = express.Router();
 
@@ -82,6 +83,17 @@ router.put('/', authenticateToken, async (req, res) => {
       [userId]
     );
 
+    // Initialize email transporter if SMTP settings are complete
+    if (settings.smtp_host && settings.smtp_user && settings.smtp_password) {
+      initializeTransporter({
+        smtp_host: settings.smtp_host,
+        smtp_port: settings.smtp_port,
+        smtp_user: settings.smtp_user,
+        smtp_password: passwordToUse || settings.smtp_password,
+        smtp_tls: true
+      });
+    }
+
     settings.smtp_password = settings.smtp_password ? '***hidden***' : null;
     res.json({ message: 'Email settings updated', settings });
   } catch (err) {
@@ -99,21 +111,38 @@ router.post('/test-connection', authenticateToken, async (req, res) => {
       [userId]
     );
 
-    if (!settings || !settings.smtp_host) {
-      return res.status(400).json({ error: 'SMTP settings not configured' });
+    if (!settings || !settings.smtp_host || !settings.smtp_user || !settings.smtp_password) {
+      return res.status(400).json({ error: 'SMTP settings not fully configured' });
     }
 
-    // For now, just validate the settings exist
-    // In production, you would use nodemailer to test the actual connection
+    // Initialize and test transporter
+    const initialized = initializeTransporter({
+      smtp_host: settings.smtp_host,
+      smtp_port: settings.smtp_port,
+      smtp_user: settings.smtp_user,
+      smtp_password: settings.smtp_password,
+      smtp_tls: true
+    });
+
+    if (!initialized) {
+      return res.status(500).json({ error: 'Failed to initialize SMTP connection' });
+    }
+
+    // Test the connection
+    await testSMTPConnection();
+
     res.json({
       success: true,
-      message: 'SMTP settings are configured',
+      message: 'SMTP connection test successful',
       host: settings.smtp_host,
       port: settings.smtp_port,
       user: settings.smtp_user
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ 
+      error: 'SMTP connection test failed',
+      details: err.message
+    });
   }
 });
 

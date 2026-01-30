@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, BarChart3, FileText, Settings as SettingsIcon } from 'lucide-react';
+import { Clock, BarChart3, FileText, Settings as SettingsIcon, Lock } from 'lucide-react';
 import AnimatedTimer from './AnimatedTimer';
 
 /**
@@ -14,7 +14,9 @@ export default function ClockInDashboard({
   loading,
   onClockIn,
   onClockOut,
-  onNavigate
+  onNavigate,
+  isLocked = false,
+  selectedCompany = null
 }) {
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -66,6 +68,38 @@ export default function ClockInDashboard({
       animate="visible"
       className="space-y-8"
     >
+      {/* Locked State Warning */}
+      {isLocked && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-500/20 border border-red-500/50 rounded-xl p-4 flex items-center gap-3 mb-6"
+        >
+          <Lock className="w-6 h-6 text-red-400" />
+          <div>
+            <h3 className="font-semibold text-red-200">Company Selection Required</h3>
+            <p className="text-sm text-red-300">Please select a company before tracking time</p>
+          </div>
+        </motion.div>
+      )}
+      
+      {/* Selected Company Display */}
+      {!isLocked && selectedCompany && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-emerald-500/20 border border-emerald-500/50 rounded-xl p-4 flex items-center gap-3 mb-6"
+        >
+          <Clock className="w-6 h-6 text-emerald-400" />
+          <div>
+            <h3 className="font-semibold text-emerald-200">Tracking for: {selectedCompany.name}</h3>
+            {selectedCompany.pay_rate > 0 && (
+              <p className="text-sm text-emerald-300">${selectedCompany.pay_rate}/hour</p>
+            )}
+          </div>
+        </motion.div>
+      )}
+      
       {/* Primary Clock In/Out Section */}
       <motion.div
         variants={itemVariants}
@@ -97,12 +131,14 @@ export default function ClockInDashboard({
         {/* Primary Action Button */}
         <motion.button
           variants={itemVariants}
-          whileHover={{ scale: 1.05, boxShadow: '0 0 40px rgba(14, 165, 233, 0.6)' }}
-          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: isLocked ? 1 : 1.05, boxShadow: '0 0 40px rgba(14, 165, 233, 0.6)' }}
+          whileTap={{ scale: isLocked ? 1 : 0.95 }}
           onClick={isClockedIn ? onClockOut : onClockIn}
-          disabled={loading}
+          disabled={loading || isLocked}
           className={`min-w-[280px] py-6 rounded-3xl font-bold text-xl mb-8 transition-all duration-300 shadow-2xl ${
-            isClockedIn
+            isLocked
+              ? 'bg-gray-600 cursor-not-allowed opacity-50'
+              : isClockedIn
               ? 'bg-gradient-to-r from-red-500 to-pink-500 hover:shadow-red-500/50 text-white'
               : 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:shadow-emerald-500/50 text-white'
           } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -111,7 +147,7 @@ export default function ClockInDashboard({
             animate={{ y: [0, -2, 0] }}
             transition={{ duration: 0.5, repeat: loading ? Infinity : 0 }}
           >
-            {loading ? '⏳ Processing...' : isClockedIn ? '🛑 Clock Out' : '✅ Clock In'}
+            {isLocked ? '🔒 Locked - Select Company' : loading ? '⏳ Processing...' : isClockedIn ? '🛑 Clock Out' : '✅ Clock In'}
           </motion.div>
         </motion.button>
 
