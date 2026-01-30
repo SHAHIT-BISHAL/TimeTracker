@@ -21,6 +21,7 @@ import MessagePreview from './MessagePreview';
  * Manages navigation between different views and handles clock in/out logic
  */
 export default function ModernDashboard() {
+  const API_BASE = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000`;
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [currentEntry, setCurrentEntry] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -156,7 +157,7 @@ export default function ModernDashboard() {
     // Update user's current_company_id in backend
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/current-company`, {
+      const response = await fetch(`${API_BASE}/api/users/current-company`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -176,7 +177,7 @@ export default function ModernDashboard() {
     // Fetch company details
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/companies/${companyId}`, {
+      const response = await fetch(`${API_BASE}/api/companies/${companyId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
