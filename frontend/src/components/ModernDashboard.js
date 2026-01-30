@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Clock, Menu, X, LogOut as LogOutIcon, Building2, MessageSquare, Mail, FileText } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { timeService } from '../services/api';
+import AppHeader from './AppHeader';
 import ClockInDashboard from './ClockInDashboard';
 import ModernManualEntryForm from './ModernManualEntryForm';
 import ExpenseEntryModal from './ExpenseEntryModal';
@@ -241,151 +242,107 @@ export default function ModernDashboard() {
   };
 
   return (
-    <div className="min-h-screen gradient-bg text-white">
-      {/* Header */}
-      <header className="sticky top-0 z-40 backdrop-blur-md bg-black/20 border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-3"
-          >
-            <div className="p-2 bg-gradient-to-br from-sky-400 to-cyan-400 rounded-xl">
-              <Clock className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">TimeTracker</h1>
-              <p className="text-xs text-gray-300">Stay productive</p>
-            </div>
-          </motion.div>
+    <div className="min-h-screen">
+      {/* Persistent App Header */}
+      <AppHeader
+        selectedCompany={selectedCompany}
+        onSettingsClick={() => handleNavigate('settings')}
+        onCompanyClick={() => setShowCompanySelector(true)}
+        onMenuClick={() => setShowMenu(!showMenu)}
+        showSettings={true}
+      />
 
-          <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="p-2 hover:bg-white/10 rounded-xl transition-colors"
-            aria-label="Toggle menu"
-          >
-            {showMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile Menu */}
-        {showMenu && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="border-t border-white/10 bg-black/40 backdrop-blur-md"
-          >
-            <div className="max-w-4xl mx-auto px-4 py-4 flex gap-2 flex-col">
-              {activeView === 'clock' && (
-                <>
-                  <button
-                    onClick={() => handleNavigate('entries')}
-                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm"
-                  >
-                    📝 View Time Entries
-                  </button>
-                  <button
-                    onClick={() => handleNavigate('expense')}
-                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm"
-                  >
-                    💰 Add Expense
-                  </button>
-                  <hr className="border-white/10 my-2" />
-                  <button
-                    onClick={() => {
-                      setShowCompanySelector(true);
-                      setShowMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
-                  >
-                    <Building2 className="w-4 h-4" />
-                    {selectedCompany ? `Company: ${selectedCompany.name}` : 'Select Company'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!selectedCompanyId) {
-                        alert('Please select a company first');
-                        setShowCompanySelector(true);
-                        setShowMenu(false);
-                        return;
-                      }
-                      setShowMessagePreview(true);
-                      setShowMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
-                  >
-                    <FileText className="w-4 h-4" />
-                    Generate Timesheet
-                  </button>
-                  <hr className="border-white/10 my-2" />
-                  <button
-                    onClick={() => {
-                      setShowCompanyModal(true);
-                      setShowMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
-                  >
-                    <Building2 className="w-4 h-4" />
-                    Manage Companies
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowMessagingModal(true);
-                      setShowMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    Messages
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowEmailModal(true);
-                      setShowMenu(false);
-                    }}
-                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
-                  >
-                    <Mail className="w-4 h-4" />
-                    Email Settings
-                  </button>
-                  <hr className="border-white/10 my-2" />
-                </>
-              )}
-              <button
-                onClick={() => {
-                  setActiveView('analytics');
-                  setShowMenu(false);
-                }}
-                className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm"
-              >
-                📊 Analytics
-              </button>
-              <button
-                onClick={() => {
-                  setActiveView('settings');
-                  setShowMenu(false);
-                }}
-                className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm"
-              >
-                ⚙️ Settings
-              </button>
-              <button
-                onClick={handleLogout}
-                className="w-full text-left px-4 py-2 hover:bg-red-500/20 rounded-lg transition-colors text-sm text-red-300"
-              >
-                <LogOutIcon className="w-4 h-4 inline mr-2" />
-                Logout
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      {/* Main Content - with padding for fixed header */}
+      <main className="pt-20 px-4 pb-8 max-w-7xl mx-auto">
         {renderView()}
       </main>
+
+      {/* Navigation Menu */}
+      {showMenu && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="fixed top-16 left-0 right-0 bg-white/95 backdrop-blur-lg border-b border-gray-200 shadow-lg z-40"
+        >
+          <div className="max-w-4xl mx-auto px-4 py-4 flex gap-2 flex-col">
+            {activeView === 'clock' && (
+              <>
+                <button
+                  onClick={() => handleNavigate('entries')}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
+                >
+                  📝 View Time Entries
+                </button>
+                <button
+                  onClick={() => handleNavigate('expense')}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
+                >
+                  💰 Add Expense
+                </button>
+                <hr className="border-gray-200 my-2" />
+                <button
+                  onClick={() => {
+                    if (!selectedCompanyId) {
+                      alert('Please select a company first');
+                      setShowCompanySelector(true);
+                      setShowMenu(false);
+                      return;
+                    }
+                    setShowMessagePreview(true);
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
+                >
+                  <FileText className="w-4 h-4" />
+                  Generate Timesheet
+                </button>
+                <hr className="border-gray-200 my-2" />
+                <button
+                  onClick={() => {
+                    setShowCompanyModal(true);
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
+                >
+                  <Building2 className="w-4 h-4" />
+                  Manage Companies
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMessagingModal(true);
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Messages
+                </button>
+                <button
+                  onClick={() => {
+                    setShowEmailModal(true);
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
+                >
+                  <Mail className="w-4 h-4" />
+                  Email Settings
+                </button>
+                <hr className="border-gray-200 my-2" />
+              </>
+            )}
+            <button
+              onClick={() => {
+                setActiveView('analytics');
+                setShowMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
+            >
+              📊 Analytics
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* Floating Action Button - Clock In/Out (only on clock view) */}
       {activeView === 'clock' && (
