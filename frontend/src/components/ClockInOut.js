@@ -104,6 +104,7 @@ export default function ClockInOut() {
       playSound();
     } catch (err) {
       console.error('Clock out error:', err);
+      alert('Error clocking out: ' + (err.response?.data?.error || err.message));
     } finally {
       setLoading(false);
     }

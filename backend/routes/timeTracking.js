@@ -77,18 +77,10 @@ router.post('/clock-out', authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const user = await dbGet('SELECT current_company_id FROM users WHERE id = ?', [userId]);
-    
-    if (!user?.current_company_id) {
-      return res.status(400).json({ 
-        error: 'No company selected',
-        code: 'NO_COMPANY_SELECTED'
-      });
-    }
-
+    // Find any active clock-in for the user across all companies
     const entry = await dbGet(
-      'SELECT * FROM time_entries WHERE user_id = ? AND company_id = ? AND clock_out IS NULL ORDER BY clock_in DESC LIMIT 1',
-      [userId, user.current_company_id]
+      'SELECT * FROM time_entries WHERE user_id = ? AND clock_out IS NULL ORDER BY clock_in DESC LIMIT 1',
+      [userId]
     );
 
     if (!entry) {

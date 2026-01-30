@@ -49,6 +49,7 @@ const AnimatedClockLogo = memo(({ onClick, size = 60, className = '' }) => {
         height={size}
         viewBox="0 0 200 200"
         className="drop-shadow-md"
+        style={{ pointerEvents: 'auto' }}
       >
         {/* Clock face with gradient */}
         <defs>
