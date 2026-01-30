@@ -111,6 +111,8 @@ CREATE TABLE IF NOT EXISTS expenses (
   amount DOUBLE PRECISION NOT NULL,
   category VARCHAR(50) NOT NULL,
   description TEXT,
+  expense_type VARCHAR(20) DEFAULT 'work',
+  receipt_path TEXT,
   expense_date TIMESTAMPTZ DEFAULT now(),
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()

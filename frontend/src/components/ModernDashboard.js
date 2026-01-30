@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Menu, X, LogOut as LogOutIcon, Building2, MessageSquare, Mail, FileText } from 'lucide-react';
+import { Clock, Menu, X, LogOut as LogOutIcon, Building2, MessageSquare, Mail, FileText, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { timeService } from '../services/api';
 import AppHeader from './AppHeader';
 import ClockInDashboard from './ClockInDashboard';
 import ModernManualEntryForm from './ModernManualEntryForm';
 import ExpenseEntryModal from './ExpenseEntryModal';
+import ExpensesManager from './ExpensesManager';
 import ModernSettings from './ModernSettings';
 import ModernAnalytics from './ModernAnalytics';
 import EntriesView from './EntriesView';
@@ -222,6 +223,20 @@ export default function ModernDashboard() {
             selectedCompanyId={selectedCompanyId}
           />
         );
+      case 'expenses':
+        return (
+          <div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setActiveView('clock')}
+              className="mb-4 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold flex items-center gap-2"
+            >
+              ← Back
+            </motion.button>
+            <ExpensesManager selectedCompanyId={selectedCompanyId} />
+          </div>
+        );
       case 'analytics':
         return <ModernAnalytics onClose={() => setActiveView('clock')} selectedCompanyId={selectedCompanyId} />;
       case 'settings':
@@ -283,6 +298,21 @@ export default function ModernDashboard() {
                   className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
                 >
                   💰 Add Expense
+                </button>
+                <button
+                  onClick={() => {
+                    if (!selectedCompanyId) {
+                      alert('⚠️ Company Selection Required\n\nPlease select a company to view expenses.');
+                      setShowCompanySelector(true);
+                      setShowMenu(false);
+                      return;
+                    }
+                    setActiveView('expenses');
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
+                >
+                  📊 View Expenses
                 </button>
                 <hr className="border-gray-200 my-2" />
                 <button

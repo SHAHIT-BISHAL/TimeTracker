@@ -1,8 +1,43 @@
 import express from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { authenticateToken } from '../middleware/auth.js';
 import { pool } from '../server.js';
 
 const router = express.Router();
+
+// Configure multer for file uploads
+const uploadDir = './uploads/receipts';
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Create unique filename: timestamp-userid-originalname
+    const uniqueSuffix = `${Date.now()}-${req.user.id}-${file.originalname}`;
+    cb(null, uniqueSuffix);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedMimes = ['image/jpeg', 'image/png', 'application/pdf'];
+  if (allowedMimes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only JPG, PNG, or PDF are allowed.'), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
 
 /**
  * Get all expenses for the authenticated user
@@ -68,16 +103,20 @@ router.get('/:id', authenticateToken, async (req, res) => {
 /**
  * Create a new expense
  * POST /api/expenses
- * Body: { amount, category, description }
+ * Body: { amount, category, description, expense_type, receipt (file) }
  */
-router.post('/', authenticateToken, async (req, res) => {
+router.post('/', authenticateToken, upload.single('receipt'), async (req, res) => {
   try {
-    const { amount, category, description } = req.body;
+    const { amount, category, description, expense_type } = req.body;
     const userId = req.user.id;
     const companyId = req.user.current_company_id;
 
     // Validation
     if (!amount || amount <= 0) {
+      // Clean up uploaded file if validation fails
+      if (req.file) {
+        fs.unlink(req.file.path, () => {});
+      }
       return res.status(400).json({
         success: false,
         error: 'Amount must be greater than 0'
@@ -85,17 +124,27 @@ router.post('/', authenticateToken, async (req, res) => {
     }
 
     if (!category || !['Food', 'Transport', 'Tools', 'Software', 'Other'].includes(category)) {
+      if (req.file) {
+        fs.unlink(req.file.path, () => {});
+      }
       return res.status(400).json({
         success: false,
         error: 'Invalid category. Must be: Food, Transport, Tools, Software, or Other'
       });
     }
 
+    // Validate expense_type
+    const validTypes = ['work', 'personal'];
+    const type = expense_type && validTypes.includes(expense_type) ? expense_type : 'work';
+
+    // Prepare receipt path if file was uploaded
+    const receiptPath = req.file ? `/uploads/receipts/${req.file.filename}` : null;
+
     const result = await pool.query(
-      `INSERT INTO expenses (user_id, company_id, amount, category, description, expense_date)
-       VALUES ($1, $2, $3, $4, $5, now())
+      `INSERT INTO expenses (user_id, company_id, amount, category, description, expense_type, receipt_path, expense_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, now())
        RETURNING *`,
-      [userId, companyId, amount, category, description || null]
+      [userId, companyId, amount, category, description || null, type, receiptPath]
     );
 
     res.status(201).json({
@@ -104,6 +153,10 @@ router.post('/', authenticateToken, async (req, res) => {
       message: 'Expense added successfully'
     });
   } catch (err) {
+    // Clean up uploaded file if error occurs
+    if (req.file) {
+      fs.unlink(req.file.path, () => {});
+    }
     console.error('Error creating expense:', err);
     res.status(500).json({
       success: false,

@@ -17,6 +17,9 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// Serve static files for uploads (receipts, etc.)
+app.use('/uploads', express.static('uploads'));
+
 // Simple request/response logger to help capture failing requests during debugging
 app.use((req, res, next) => {
   const start = Date.now();
@@ -233,6 +236,8 @@ async function initializeDatabase() {
     'ALTER TABLE companies ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now()',
     'ALTER TABLE companies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now()',
     'ALTER TABLE users ADD COLUMN IF NOT EXISTS break_reminder_minutes INTEGER DEFAULT 120',
+    'ALTER TABLE expenses ADD COLUMN IF NOT EXISTS expense_type VARCHAR(20) DEFAULT \'work\'',
+    'ALTER TABLE expenses ADD COLUMN IF NOT EXISTS receipt_path TEXT',
     `DO $$
     BEGIN
       IF NOT EXISTS (
