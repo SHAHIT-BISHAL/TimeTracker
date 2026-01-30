@@ -116,6 +116,19 @@ CREATE TABLE IF NOT EXISTS expenses (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Messages table
+CREATE TABLE IF NOT EXISTS messages (
+  id SERIAL PRIMARY KEY,
+  sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  recipient_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  is_team_message BOOLEAN DEFAULT true,
+  content TEXT NOT NULL,
+  read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_time_entries_user_id ON time_entries(user_id);
 CREATE INDEX IF NOT EXISTS idx_time_entries_company_id ON time_entries(company_id);
@@ -129,6 +142,10 @@ CREATE INDEX IF NOT EXISTS idx_user_companies_company ON user_companies(company_
 CREATE INDEX IF NOT EXISTS idx_expenses_user_id ON expenses(user_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_company_id ON expenses(company_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(expense_date);
+CREATE INDEX IF NOT EXISTS idx_messages_sender_id ON messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_messages_recipient_id ON messages(recipient_id);
+CREATE INDEX IF NOT EXISTS idx_messages_company_id ON messages(company_id);
+CREATE INDEX IF NOT EXISTS idx_messages_read ON messages(read);
 `;
 
 async function runMigrations() {

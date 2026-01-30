@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Menu, X, LogOut as LogOutIcon } from 'lucide-react';
+import { Clock, Menu, X, LogOut as LogOutIcon, Building2, MessageSquare, Mail } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { timeService } from '../services/api';
 import ClockInDashboard from './ClockInDashboard';
@@ -9,6 +9,9 @@ import ExpenseEntryModal from './ExpenseEntryModal';
 import ModernSettings from './ModernSettings';
 import ModernAnalytics from './ModernAnalytics';
 import EntriesView from './EntriesView';
+import CompanyManager from './CompanyManager';
+import MessagingCenter from './MessagingCenter';
+import EmailSettingsModal from './EmailSettingsModal';
 
 /**
  * Main dashboard component
@@ -22,6 +25,9 @@ export default function ModernDashboard() {
   const [showMenu, setShowMenu] = useState(false);
   const [showManualEntryModal, setShowManualEntryModal] = useState(false);
   const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
+  const [showMessagingModal, setShowMessagingModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -182,6 +188,38 @@ export default function ModernDashboard() {
                   >
                     💰 Add Expense
                   </button>
+                  <hr className="border-white/10 my-2" />
+                  <button
+                    onClick={() => {
+                      setShowCompanyModal(true);
+                      setShowMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
+                  >
+                    <Building2 className="w-4 h-4" />
+                    Companies
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowMessagingModal(true);
+                      setShowMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Messages
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowEmailModal(true);
+                      setShowMenu(false);
+                    }}
+                    className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-lg transition-colors text-sm flex items-center gap-2"
+                  >
+                    <Mail className="w-4 h-4" />
+                    Email Settings
+                  </button>
+                  <hr className="border-white/10 my-2" />
                 </>
               )}
               <button
@@ -240,6 +278,25 @@ export default function ModernDashboard() {
         onExpenseAdded={() => {
           // Refresh data if needed
         }}
+      />
+      
+      <CompanyManager
+        isOpen={showCompanyModal}
+        onClose={() => setShowCompanyModal(false)}
+        onCompanyChanged={() => {
+          // Refresh data if needed
+          setShowCompanyModal(false);
+        }}
+      />
+      
+      <MessagingCenter
+        isOpen={showMessagingModal}
+        onClose={() => setShowMessagingModal(false)}
+      />
+      
+      <EmailSettingsModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
       />
     </div>
   );

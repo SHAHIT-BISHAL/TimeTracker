@@ -65,4 +65,89 @@ router.put('/profile/setup-complete', authenticateToken, async (req, res) => {
   }
 });
 
+// Get current user info with company
+router.get('/me', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const user = await dbGet(
+      'SELECT id, username, email, current_company_id as company_id, hourly_rate, pay_cycle_type FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Switch current company
+router.put('/current-company', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+  const { company_id } = req.body;
+
+  if (!company_id) {
+    return res.status(400).json({ error: 'company_id is required' });
+  }
+
+  try {
+    // Verify user has access to this company
+    const access = await dbGet(
+      'SELECT id FROM user_companies WHERE user_id = ? AND company_id = ?',
+      [userId, company_id]
+    );
+
+    if (!access) {
+      return res.status(403).json({ error: 'Company not found or access denied' });
+    }
+
+    await dbRun(
+      'UPDATE users SET current_company_id = ?, updated_at = now() WHERE id = ?',
+      [company_id, userId]
+    );
+
+    res.json({ message: 'Company switched successfully', company_id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get all users in current company
+router.get('/company', authenticateToken, async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    // Get user's current company
+    const user = await dbGet(
+      'SELECT current_company_id FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (!user || !user.current_company_id) {
+      return res.status(400).json({ error: 'User not in a company' });
+    }
+
+    // Get all users in the same company
+    const users = await new Promise((resolve, reject) => {
+      const db = global.db;
+      db.all(
+        'SELECT id, username, email FROM users WHERE current_company_id = ? ORDER BY username',
+        [user.current_company_id],
+        (err, rows) => {
+          if (err) reject(err);
+          else resolve(rows || []);
+        }
+      );
+    });
+
+    res.json({ users, company_id: user.current_company_id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

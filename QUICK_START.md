@@ -43,8 +43,12 @@ cd ..
 
 ### Step 3: Rebuild Docker Containers
 ```bash
+# IMPORTANT: Do NOT use -v flag as it deletes the database!
 docker-compose -f docker/docker-compose.yml down
 docker-compose -f docker/docker-compose.yml up -d --build
+
+# If you need a fresh database, use:
+# docker-compose -f docker/docker-compose.yml down -v  # WARNING: Deletes all data!
 ```
 
 ### Step 4: Verify Services

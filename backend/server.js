@@ -235,6 +235,7 @@ import manualEntriesRoutes from './routes/manualEntries.js';
 import emailSettingsRoutes from './routes/emailSettings.js';
 import payCycleSetupRoutes from './routes/payCycleSetup.js';
 import expensesRoutes from './routes/expenses.js';
+import messagesRoutes from './routes/messages.js';
 
 // Use routes
 app.use('/api/auth', authRoutes);
@@ -248,6 +249,7 @@ app.use('/api/companies', companiesRoutes);
 app.use('/api/manual-entries', manualEntriesRoutes);
 app.use('/api/email-settings', emailSettingsRoutes);
 app.use('/api/expenses', expensesRoutes);
+app.use('/api/messages', messagesRoutes);
 
 const PORT = process.env.PORT || 5000;
 
