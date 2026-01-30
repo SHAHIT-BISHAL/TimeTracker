@@ -222,8 +222,25 @@ async function initializeDatabase() {
 
   const tables = [createCompaniesTable, createUsersTable, createUserCompaniesTable, createTimeEntriesTable, createBreaksTable, createPayCyclesTable, createEmailSettingsTable, createEmailLogTable];
 
+  const migrations = [
+    'ALTER TABLE companies ADD COLUMN IF NOT EXISTS user_id INTEGER',
+    `DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint WHERE conname = 'companies_user_id_fkey'
+      ) THEN
+        ALTER TABLE companies
+          ADD CONSTRAINT companies_user_id_fkey
+          FOREIGN KEY (user_id) REFERENCES users(id);
+      END IF;
+    END $$;`
+  ];
+
   try {
     for (const stmt of tables) {
+      await dbRun(stmt, []);
+    }
+    for (const stmt of migrations) {
       await dbRun(stmt, []);
     }
     for (const stmt of createIndexes) {
