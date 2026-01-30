@@ -249,9 +249,12 @@ app.use('/api/email-settings', emailSettingsRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`\n🚀 TimeTracker API running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health\n`);
+  
+  // Initialize database tables
+  await initializeDatabase();
 });
 
 export { pool as db, dbRun, dbGet, dbAll };
