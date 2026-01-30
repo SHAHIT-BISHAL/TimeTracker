@@ -69,6 +69,30 @@ export default function ModernDashboard() {
     };
   }, [isClockedIn]);
 
+  // Load company details when selectedCompanyId changes
+  useEffect(() => {
+    if (selectedCompanyId && !selectedCompany) {
+      const loadCompanyDetails = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          const response = await fetch(`${API_BASE}/api/companies/${selectedCompanyId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          
+          if (response.ok) {
+            const company = await response.json();
+            setSelectedCompany(company);
+          }
+        } catch (err) {
+          console.error('Error fetching company details:', err);
+        }
+      };
+      loadCompanyDetails();
+    }
+  }, [selectedCompanyId]);
+
   const fetchStatus = async () => {
     try {
       const response = await timeService.getStatus();
@@ -294,6 +318,21 @@ export default function ModernDashboard() {
                   📝 View Time Entries
                 </button>
                 <button
+                  onClick={() => {
+                    if (!selectedCompanyId) {
+                      alert('⚠️ Company Selection Required\n\nPlease select a company before adding manual entries.');
+                      setShowCompanySelector(true);
+                      setShowMenu(false);
+                      return;
+                    }
+                    setShowManualEntryModal(true);
+                    setShowMenu(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
+                >
+                  ⏱️ Add Manual Entry
+                </button>
+                <button
                   onClick={() => handleNavigate('expense')}
                   className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
                 >
@@ -441,6 +480,32 @@ export default function ModernDashboard() {
         companyName={selectedCompany?.name}
         companyEmail={selectedCompany?.manager_email}
       />
-    </div>
-  );
-}
+
+      {/* Manual Entry Modal */}
+      {showManualEntryModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">Add Manual Entry</h2>
+              <button
+                onClick={() => setShowManualEntryModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+            <ModernManualEntryForm
+              onEntryAdded={() => {
+                setShowManualEntryModal(false);
+                fetchStatus();
+              }}
+              triggerButton={false}
+            />
+          </motion.div>
+        </div>
+      )}
