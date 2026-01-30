@@ -103,6 +103,19 @@ CREATE TABLE IF NOT EXISTS email_settings (
   updated_at TIMESTAMPTZ DEFAULT now()
 );
 
+-- Expenses table
+CREATE TABLE IF NOT EXISTS expenses (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  company_id INTEGER NOT NULL REFERENCES companies(id) ON DELETE CASCADE,
+  amount DOUBLE PRECISION NOT NULL,
+  category VARCHAR(50) NOT NULL,
+  description TEXT,
+  expense_date TIMESTAMPTZ DEFAULT now(),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_time_entries_user_id ON time_entries(user_id);
 CREATE INDEX IF NOT EXISTS idx_time_entries_company_id ON time_entries(company_id);
@@ -113,6 +126,9 @@ CREATE INDEX IF NOT EXISTS idx_pay_cycles_user_id ON pay_cycles(user_id);
 CREATE INDEX IF NOT EXISTS idx_pay_cycles_company_id ON pay_cycles(company_id);
 CREATE INDEX IF NOT EXISTS idx_user_companies_user ON user_companies(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_companies_company ON user_companies(company_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_user_id ON expenses(user_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_company_id ON expenses(company_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_date ON expenses(expense_date);
 `;
 
 async function runMigrations() {
