@@ -42,18 +42,30 @@ export default function CompanySelector({
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setError('❌ Please log in again to continue');
+        setTimeout(() => window.location.href = '/login', 2000);
+        return;
+      }
+      
       const response = await axios.get(`${API_URL}/companies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCompanies(response.data || []);
       setError('');
     } catch (err) {
-      if (err.response?.status === 401) {
-        setError('❌ Invalid or expired token');
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setError('❌ Your session has expired. Please log in again.');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setTimeout(() => window.location.href = '/login', 2000);
+      } else if (err.response?.status === 404) {
+        setError('❌ Companies endpoint not found. Please contact support.');
       } else {
-        setError('❌ Failed to load companies');
+        setError('❌ Failed to load companies. Please try again.');
       }
-      console.error(err);
+      console.error('Fetch companies error:', err);
     } finally {
       setLoading(false);
     }
@@ -86,6 +98,13 @@ export default function CompanySelector({
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        setError('❌ Please log in again to create a company');
+        setTimeout(() => window.location.href = '/login', 2000);
+        return;
+      }
+      
       const response = await axios.post(`${API_URL}/companies`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -106,8 +125,15 @@ export default function CompanySelector({
       
       console.log('✅ Company created successfully:', response.data.name);
     } catch (err) {
-      const errorMsg = err.response?.data?.error || 'Failed to create company. Please try again.';
-      setError(`❌ ${errorMsg}`);
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        setError('❌ Your session has expired. Please log in again.');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setTimeout(() => window.location.href = '/login', 2000);
+      } else {
+        const errorMsg = err.response?.data?.error || 'Failed to create company. Please try again.';
+        setError(`❌ ${errorMsg}`);
+      }
       console.error('Company creation error:', err);
     } finally {
       setLoading(false);

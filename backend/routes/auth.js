@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { db, dbRun, dbGet } from '../server.js';
 
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Register
 router.post('/register', async (req, res) => {
@@ -79,9 +80,11 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { id: user.id, username: user.username },
-      process.env.JWT_SECRET || 'your-secret-key',
+      JWT_SECRET,
       { expiresIn: '7d' }
     );
+
+    console.log(`✅ Login successful for user: ${user.username} (ID: ${user.id})`);
 
     res.json({ 
       token,
@@ -95,8 +98,39 @@ router.post('/login', async (req, res) => {
       }
     });
   } catch (err) {
+    console.error('Login error:', err);
     res.status(500).json({ error: err.message });
   }
 });
+
+// Verify token (debug endpoint)
+router.get('/verify-token', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ 
+      valid: false, 
+      error: 'No token provided'
+    });
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ 
+        valid: false, 
+        error: 'Invalid or expired token',
+        details: err.message
+      });
+    }
+    
+    res.json({ 
+      valid: true,
+      user: user
+    });
+  });
+});
+
+export default router;
 
 export default router;
