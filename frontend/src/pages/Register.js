@@ -14,14 +14,35 @@ export default function Register() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    
+    // Client-side validation
+    if (username.length < 3) {
+      setError('Username must be at least 3 characters');
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
+    
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
-      await authService.register(username, email, password);
-      navigate('/login');
+      const response = await authService.register(username, email, password);
+      console.log('✅ Registration successful:', response);
+      // Navigate to login after a short delay
+      setTimeout(() => navigate('/login'), 1000);
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      const errorMsg = err.response?.data?.error || err.message || 'Registration failed. Please try again.';
+      setError(errorMsg);
+      console.error('Registration error:', err);
     } finally {
       setLoading(false);
     }

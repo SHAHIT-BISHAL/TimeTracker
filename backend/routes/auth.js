@@ -10,50 +10,73 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 router.post('/register', async (req, res) => {
   const { username, email, password } = req.body;
 
+  // Validation
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'Username, email, and password required' });
+  }
+
+  if (username.length < 3) {
+    return res.status(400).json({ error: 'Username must be at least 3 characters' });
+  }
+
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+
+  if (!email.includes('@')) {
+    return res.status(400).json({ error: 'Invalid email address' });
   }
 
   try {
     const hashedPassword = await bcryptjs.hash(password, 10);
     
-    const result = await dbRun(
+    // Insert user first
+    const userResult = await dbRun(
       'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
       [username, email, hashedPassword]
     );
 
+    const userId = userResult.id;
+    console.log(`✅ User created: ${username} (ID: ${userId})`);
+
     // Create default company for user
     const companyResult = await dbRun(
-      'INSERT INTO companies (name, description) VALUES (?, ?)',
-      [`${username}'s Company`, `Default company for ${username}`]
+      'INSERT INTO companies (user_id, name, description) VALUES (?, ?, ?)',
+      [userId, `${username}'s Company`, `Default company for ${username}`]
     );
 
-    // Add user to company
+    const companyId = companyResult.id;
+    console.log(`✅ Default company created for user ${userId} (Company ID: ${companyId})`);
+
+    // Add user to company with owner role
     await dbRun(
       'INSERT INTO user_companies (user_id, company_id, role) VALUES (?, ?, ?)',
-      [result.id, companyResult.id, 'owner']
+      [userId, companyId, 'owner']
     );
 
     // Set as current company
     await dbRun(
       'UPDATE users SET current_company_id = ? WHERE id = ?',
-      [companyResult.id, result.id]
+      [companyId, userId]
     );
 
     res.status(201).json({ 
       message: 'User registered successfully',
       user: {
-        id: result.id,
+        id: userId,
         username,
         email,
-        company_id: companyResult.id
+        company_id: companyId
       }
     });
   } catch (err) {
-    if (err.message && (err.message.includes('duplicate key') || err.message.includes('UNIQUE constraint'))) {
+    console.error('Registration error:', err);
+    
+    if (err.message && (err.message.includes('duplicate') || err.message.includes('UNIQUE'))) {
       return res.status(409).json({ error: 'Username or email already exists' });
     }
-    res.status(500).json({ error: err.message });
+    
+    res.status(500).json({ error: err.message || 'Registration failed' });
   }
 });
 

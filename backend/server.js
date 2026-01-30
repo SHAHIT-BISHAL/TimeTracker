@@ -62,7 +62,7 @@ function toPgParams(sql, params = []) {
   return { text, values: params };
 }
 
-const dbRun = async (sql, params = []) => {
+export const dbRun = async (sql, params = []) => {
   const { text, values } = toPgParams(sql, params);
   const client = await pool.connect();
   try {
@@ -78,13 +78,13 @@ const dbRun = async (sql, params = []) => {
   }
 };
 
-const dbGet = async (sql, params = []) => {
+export const dbGet = async (sql, params = []) => {
   const { text, values } = toPgParams(sql, params);
   const res = await pool.query(text, values);
   return res.rows[0] || null;
 };
 
-const dbAll = async (sql, params = []) => {
+export const dbAll = async (sql, params = []) => {
   const { text, values } = toPgParams(sql, params);
   const res = await pool.query(text, values);
   return res.rows || [];
@@ -271,7 +271,7 @@ app.use('/api/fortnightly', forthnightlyRoutes);
 
 const PORT = process.env.PORT || 5000;
 
-// Export pool for use in route files
+// Export pool and helpers
 export { pool };
 
 app.listen(PORT, async () => {
@@ -282,4 +282,3 @@ app.listen(PORT, async () => {
   await initializeDatabase();
 });
 
-export { pool as db, dbRun, dbGet, dbAll };
