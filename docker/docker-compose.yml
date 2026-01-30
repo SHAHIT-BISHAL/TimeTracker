@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: timetracker-db
+    environment:
+      POSTGRES_USER: timetracker
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: timetracker
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - timetracker-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timetracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.backend
+    container_name: timetracker-api
+    environment:
+      DATABASE_URL: postgresql://timetracker:password@postgres:5432/timetracker
+      JWT_SECRET: your-secret-key-change-in-production
+      PORT: 5000
+      NODE_ENV: production
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - timetracker-net
+    volumes:
+      - ./backend/.env:/app/backend/.env
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    container_name: timetracker-web
+    environment:
+      REACT_APP_API_URL: http://backend:5000/api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - timetracker-net
+
+volumes:
+  postgres_data:
+
+networks:
+  timetracker-net:
+    driver: bridge
