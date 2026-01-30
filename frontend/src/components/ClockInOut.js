@@ -216,6 +216,9 @@ export default function ClockInOut() {
           <div className="last-entry">
             <h3>Current Session</h3>
             <p>Clock In: {new Date(currentEntry.clock_in).toLocaleString()}</p>
+            {currentEntry.company_id && (
+              <p><strong>Company:</strong> {companies.find(c => c.id === currentEntry.company_id)?.name || 'Unknown'}</p>
+            )}
             {currentEntry.project && <p>Project: {currentEntry.project}</p>}
             {currentEntry.notes && <p>Notes: {currentEntry.notes}</p>}
             {currentEntry.clock_out && (

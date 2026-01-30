@@ -141,83 +141,64 @@ router.post('/generate-message', authenticateToken, async (req, res) => {
   }
 
   try {
-    // Get summary first
-    const summaryRes = await new Promise((resolve, reject) => {
-      const forthnightInfo = getForthnightInfo(queryDate);
+    const forthnightInfo = getForthnightInfo(queryDate);
 
-      const queryFunc = async () => {
-        // Verify access
-        const access = await dbGet(
-          'SELECT id FROM user_companies WHERE user_id = ? AND company_id = ?',
-          [userId, company_id]
-        );
+    // Verify access
+    const access = await dbGet(
+      'SELECT id FROM user_companies WHERE user_id = ? AND company_id = ?',
+      [userId, company_id]
+    );
 
-        if (!access) {
-          throw new Error('Access denied');
-        }
+    if (!access) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
 
-        // Get data
-        const timeEntries = await new Promise((res, rej) => {
-          const db = global.db;
-          db.all(
-            `SELECT * FROM time_entries 
-             WHERE user_id = ? AND company_id = ? 
-             AND clock_in >= ? AND clock_in <= ?`,
-            [userId, company_id, forthnightInfo.start, forthnightInfo.end],
-            (err, rows) => {
-              if (err) rej(err);
-              else res(rows || []);
-            }
-          );
-        });
+    // Get data using dbAll instead of global.db.all
+    const timeEntries = await dbAll(
+      `SELECT * FROM time_entries 
+       WHERE user_id = ? AND company_id = ? 
+       AND clock_in >= ? AND clock_in <= ?
+       ORDER BY clock_in`,
+      [userId, company_id, forthnightInfo.start, forthnightInfo.end]
+    );
 
-        const expenses = await new Promise((res, rej) => {
-          const db = global.db;
-          db.all(
-            `SELECT * FROM expenses 
-             WHERE user_id = ? AND company_id = ? 
-             AND expense_date >= ? AND expense_date <= ?`,
-            [userId, company_id, forthnightInfo.startFormatted, forthnightInfo.endFormatted],
-            (err, rows) => {
-              if (err) rej(err);
-              else res(rows || []);
-            }
-          );
-        });
+    const expenses = await dbAll(
+      `SELECT * FROM expenses 
+       WHERE user_id = ? AND company_id = ? 
+       AND expense_date >= ? AND expense_date <= ?
+       ORDER BY expense_date`,
+      [userId, company_id, forthnightInfo.startFormatted, forthnightInfo.endFormatted]
+    );
 
-        const company = await dbGet('SELECT * FROM companies WHERE id = ?', [company_id]);
-        const user = await dbGet('SELECT username FROM users WHERE id = ?', [userId]);
+    const company = await dbGet('SELECT * FROM companies WHERE id = ?', [company_id]);
+    const user = await dbGet('SELECT username FROM users WHERE id = ?', [userId]);
 
-        let totalMinutes = 0;
-        const dailyBreakdown = {};
+    let totalMinutes = 0;
+    const dailyBreakdown = {};
 
-        for (const entry of timeEntries) {
-          if (entry.duration_minutes) {
-            totalMinutes += entry.duration_minutes;
-            const entryDate = new Date(entry.clock_in).toISOString().split('T')[0];
-            dailyBreakdown[entryDate] = (dailyBreakdown[entryDate] || 0) + entry.duration_minutes;
-          }
-        }
+    for (const entry of timeEntries) {
+      if (entry.duration_minutes) {
+        totalMinutes += entry.duration_minutes;
+        const entryDate = new Date(entry.clock_in).toISOString().split('T')[0];
+        dailyBreakdown[entryDate] = (dailyBreakdown[entryDate] || 0) + entry.duration_minutes;
+      }
+    }
 
-        const formattedExpenses = expenses.map(exp => ({
-          date: exp.expense_date,
-          amount: parseFloat(exp.amount),
-          description: exp.category,
-          notes: exp.notes
-        }));
+    const formattedExpenses = expenses.map(exp => ({
+      date: exp.expense_date,
+      amount: parseFloat(exp.amount),
+      description: exp.category,
+      notes: exp.notes
+    }));
 
-        return {
-          companyName: company.name,
-          forthnightLabel: forthnightInfo.label,
-          totalMinutes,
-          dailyBreakdown,
-          expenses: formattedExpenses,
-          userName: user.username
-        };
-      };
-
-      queryFunc().then(resolve).catch(reject);
-    });
+    const summaryRes = {
+      companyName: company.name,
+      forthnightLabel: forthnightInfo.label,
+      totalMinutes,
+      dailyBreakdown,
+      expenses: formattedExpenses,
+      userName: user.username
+    };
 
     const message = generateTimesheetMessage(summaryRes);
 
@@ -261,40 +242,29 @@ router.post('/send-email', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    // Get company info
+    // Get company info and email settings
     const company = await dbGet('SELECT * FROM companies WHERE id = ?', [company_id]);
+    const emailSettings = await dbGet('SELECT * FROM email_settings WHERE user_id = ?', [userId]);
 
     // Generate message
     const forthnightInfo = getForthnightInfo(queryDate);
 
-    // Get time entries and expenses...
-    const timeEntries = await new Promise((resolve, reject) => {
-      const db = global.db;
-      db.all(
-        `SELECT * FROM time_entries 
-         WHERE user_id = ? AND company_id = ? 
-         AND clock_in >= ? AND clock_in <= ?`,
-        [userId, company_id, forthnightInfo.start, forthnightInfo.end],
-        (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows || []);
-        }
-      );
-    });
+    // Get time entries and expenses using dbAll...
+    const timeEntries = await dbAll(
+      `SELECT * FROM time_entries 
+       WHERE user_id = ? AND company_id = ? 
+       AND clock_in >= ? AND clock_in <= ?
+       ORDER BY clock_in`,
+      [userId, company_id, forthnightInfo.start, forthnightInfo.end]
+    );
 
-    const expenses = await new Promise((resolve, reject) => {
-      const db = global.db;
-      db.all(
-        `SELECT * FROM expenses 
-         WHERE user_id = ? AND company_id = ? 
-         AND expense_date >= ? AND expense_date <= ?`,
-        [userId, company_id, forthnightInfo.startFormatted, forthnightInfo.endFormatted],
-        (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows || []);
-        }
-      );
-    });
+    const expenses = await dbAll(
+      `SELECT * FROM expenses 
+       WHERE user_id = ? AND company_id = ? 
+       AND expense_date >= ? AND expense_date <= ?
+       ORDER BY expense_date`,
+      [userId, company_id, forthnightInfo.startFormatted, forthnightInfo.endFormatted]
+    );
 
     const user = await dbGet('SELECT username FROM users WHERE id = ?', [userId]);
 
@@ -332,7 +302,8 @@ router.post('/send-email', authenticateToken, async (req, res) => {
       to: recipient_email,
       subject: message.subject,
       text: message.text,
-      html: message.html
+      html: message.html,
+      from: emailSettings?.from_address
     });
 
     // Log the email send

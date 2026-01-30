@@ -130,6 +130,17 @@ export default function EmailSettings() {
             <p className="help-text">For Gmail, use an App Password, not your regular password</p>
           </div>
 
+          <div className="form-group">
+            <label>From Email Address</label>
+            <input
+              type="email"
+              placeholder="sender@domain.com"
+              value={settings.from_address || ''}
+              onChange={(e) => setSettings({ ...settings, from_address: e.target.value })}
+            />
+            <p className="help-text">Email address that will appear as the sender. Leave blank to use SMTP User email.</p>
+          </div>
+
           <button className="btn-test" onClick={handleTestConnection}>
             Test Connection
           </button>

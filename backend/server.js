@@ -187,6 +187,7 @@ async function initializeDatabase() {
       smtp_port INTEGER,
       smtp_user TEXT,
       smtp_password TEXT,
+      from_address TEXT,
       reminder_enabled BOOLEAN DEFAULT false,
       reminder_before_minutes INTEGER DEFAULT 60,
       reminder_frequency TEXT DEFAULT 'daily',

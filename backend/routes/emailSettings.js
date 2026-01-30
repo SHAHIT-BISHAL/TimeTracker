@@ -45,6 +45,7 @@ router.put('/', authenticateToken, async (req, res) => {
     smtp_port,
     smtp_user,
     smtp_password,
+    from_address,
     reminder_enabled,
     reminder_before_minutes,
     reminder_frequency
@@ -60,9 +61,9 @@ router.put('/', authenticateToken, async (req, res) => {
       // Create new settings
       await dbRun(
         `INSERT INTO email_settings 
-         (user_id, smtp_host, smtp_port, smtp_user, smtp_password, reminder_enabled, reminder_before_minutes, reminder_frequency) 
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-        [userId, smtp_host || null, smtp_port || null, smtp_user || null, smtp_password || null, reminder_enabled ? true : false, reminder_before_minutes || 60, reminder_frequency || 'daily']
+         (user_id, smtp_host, smtp_port, smtp_user, smtp_password, from_address, reminder_enabled, reminder_before_minutes, reminder_frequency) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [userId, smtp_host || null, smtp_port || null, smtp_user || null, smtp_password || null, from_address || null, reminder_enabled ? true : false, reminder_before_minutes || 60, reminder_frequency || 'daily']
       );
     } else {
       // Update settings, preserve password if not provided
@@ -70,11 +71,11 @@ router.put('/', authenticateToken, async (req, res) => {
       
       await dbRun(
         `UPDATE email_settings 
-         SET smtp_host = ?, smtp_port = ?, smtp_user = ?, smtp_password = ?, 
+         SET smtp_host = ?, smtp_port = ?, smtp_user = ?, smtp_password = ?, from_address = ?,
              reminder_enabled = ?, reminder_before_minutes = ?, reminder_frequency = ?,
              updated_at = now()
          WHERE user_id = ?`,
-        [smtp_host || null, smtp_port || null, smtp_user || null, passwordToUse, reminder_enabled ? true : false, reminder_before_minutes || 60, reminder_frequency || 'daily', userId]
+        [smtp_host || null, smtp_port || null, smtp_user || null, passwordToUse, from_address || null, reminder_enabled ? true : false, reminder_before_minutes || 60, reminder_frequency || 'daily', userId]
       );
     }
 
