@@ -95,7 +95,16 @@ export default function ModernSettings({ onClose }) {
 
   return (
     <div className="min-h-screen gradient-bg text-white py-12">
-      <div className="max-w-2xl mx-auto px-4">
+      <div className="max-w-2xl mx-auto px-4">        {/* Back Button */}
+        <motion.button
+          onClick={onClose}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="mb-6 flex items-center gap-2 px-4 py-2 rounded-lg bg-white hover:bg-gray-50 text-gray-700 transition-colors shadow-sm"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back to Dashboard</span>
+        </motion.button>
         <motion.div
           variants={containerVariants}
           initial="hidden"

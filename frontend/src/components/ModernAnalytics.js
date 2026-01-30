@@ -132,6 +132,17 @@ export default function ModernAnalytics({ onClose }) {
   return (
     <div className="min-h-screen gradient-bg text-white py-12">
       <div className="max-w-6xl mx-auto px-4">
+        {/* Back Button */}
+        <motion.button
+          onClick={onClose}
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="mb-6 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back to Dashboard</span>
+        </motion.button>
+
         <motion.div
           variants={containerVariants}
           initial="hidden"
