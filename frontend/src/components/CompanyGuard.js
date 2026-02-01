@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { Building2, Loader } from 'lucide-react';
 import CompanySelector from './CompanySelector';
 import CompanyManager from './CompanyManager';
-import companyContext from '../services/companyContext';
+import { useActiveCompany } from '../contexts/CompanyContext';
 
 const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
 
@@ -18,9 +18,9 @@ const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostn
  * 4. If company selected, render children
  */
 export default function CompanyGuard({ children }) {
+  const { activeCompanyId, setActiveCompany, isLoading: contextLoading } = useActiveCompany();
   const [loading, setLoading] = useState(true);
   const [companies, setCompanies] = useState([]);
-  const [selectedCompanyId, setSelectedCompanyId] = useState(null);
   const [showCompanyCreation, setShowCompanyCreation] = useState(false);
   const [showCompanySelector, setShowCompanySelector] = useState(false);
 
@@ -32,9 +32,6 @@ export default function CompanyGuard({ children }) {
     setLoading(true);
     
     try {
-      // Check if company already selected in session
-      const storedCompanyId = companyContext.getActiveCompanyId();
-      
       // Fetch user's companies
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/companies`, {
@@ -48,18 +45,15 @@ export default function CompanyGuard({ children }) {
         // No companies - force creation
         setShowCompanyCreation(true);
         setShowCompanySelector(false);
-      } else if (!storedCompanyId || !userCompanies.find(c => c.id === parseInt(storedCompanyId))) {
+      } else if (!activeCompanyId || !userCompanies.find(c => c.id === parseInt(activeCompanyId))) {
         // Companies exist but none selected or invalid selection
         setShowCompanySelector(true);
         setShowCompanyCreation(false);
       } else {
-        // Valid company selected
-        setSelectedCompanyId(storedCompanyId);
-        
-        // Load company details
-        const company = userCompanies.find(c => c.id === parseInt(storedCompanyId));
+        // Valid company selected - ensure context has full data
+        const company = userCompanies.find(c => c.id === parseInt(activeCompanyId));
         if (company) {
-          companyContext.setActiveCompany(storedCompanyId, company);
+          setActiveCompany(activeCompanyId, company);
         }
       }
     } catch (err) {
@@ -80,10 +74,9 @@ export default function CompanyGuard({ children }) {
     try {
       const company = companies.find(c => c.id === companyId);
       
-      // Update backend
-      await companyContext.switchCompany(companyId, company);
+      // Update context (which also updates backend and localStorage)
+      await setActiveCompany(companyId, company);
       
-      setSelectedCompanyId(companyId);
       setShowCompanySelector(false);
       setShowCompanyCreation(false);
     } catch (err) {
@@ -93,7 +86,7 @@ export default function CompanyGuard({ children }) {
   };
 
   // Loading state
-  if (loading) {
+  if (loading || contextLoading) {
     return (
       <div className="min-h-screen gradient-bg flex items-center justify-center">
         <motion.div
@@ -158,7 +151,7 @@ export default function CompanyGuard({ children }) {
         <CompanySelector
           isOpen={true}
           onClose={() => {}} // Prevent closing - must select
-          selectedCompanyId={selectedCompanyId}
+          selectedCompanyId={activeCompanyId}
           onCompanySelect={handleCompanySelected}
           isLocked={true}
           companies={companies}
@@ -168,7 +161,7 @@ export default function CompanyGuard({ children }) {
   }
 
   // Company selected - render protected content
-  if (selectedCompanyId) {
+  if (activeCompanyId) {
     return children;
   }
 

@@ -1,5 +1,4 @@
 import axios from 'axios';
-import companyContext from './companyContext';
 
 // If REACT_APP_API_URL is set, use it. Otherwise construct a host-based API URL so
 // mobile devices accessing the dev server via LAN use the same host
@@ -17,7 +16,7 @@ api.interceptors.request.use((config) => {
   }
 
   // Add company context to requests automatically
-  const companyId = companyContext.getActiveCompanyId();
+  const companyId = localStorage.getItem('selectedCompanyId');
   if (companyId) {
     // Add to params for GET requests
     if (config.method === 'get') {

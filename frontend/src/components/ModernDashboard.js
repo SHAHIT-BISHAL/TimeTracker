@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Clock, Menu, X, LogOut as LogOutIcon, Building2, MessageSquare, Mail, FileText, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { timeService } from '../services/api';
+import { useActiveCompany } from '../contexts/CompanyContext';
 import AppHeader from './AppHeader';
 import ClockInDashboard from './ClockInDashboard';
 import ModernManualEntryForm from './ModernManualEntryForm';
@@ -23,6 +24,7 @@ import MessagePreview from './MessagePreview';
  */
 export default function ModernDashboard() {
   const API_BASE = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000`;
+  const { activeCompanyId, activeCompanyName, activeCompanyData, switchCompany } = useActiveCompany();
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [currentEntry, setCurrentEntry] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -34,12 +36,8 @@ export default function ModernDashboard() {
   const [showMessagingModal, setShowMessagingModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   
-  // Company selection state - Get from CompanyGuard's validated context
-  const [selectedCompanyId, setSelectedCompanyId] = useState(
-    localStorage.getItem('selectedCompanyId') || null
-  );
-  const [showCompanySelector, setShowCompanySelector] = useState(false); // Don't force on load, CompanyGuard handles it
-  const [selectedCompany, setSelectedCompany] = useState(null);
+  // Company selection state - managed by context
+  const [showCompanySelector, setShowCompanySelector] = useState(false);
   const [showMessagePreview, setShowMessagePreview] = useState(false);
   
   const navigate = useNavigate();
@@ -104,7 +102,7 @@ export default function ModernDashboard() {
   };
 
   const handleClockIn = async () => {
-    if (!selectedCompanyId) {
+    if (!activeCompanyId) {
       alert('⚠️ Company Selection Required\n\nPlease select a company before clocking in. This ensures your time is tracked correctly.');
       setShowCompanySelector(true);
       return;
@@ -112,7 +110,7 @@ export default function ModernDashboard() {
     
     setLoading(true);
     try {
-      const response = await timeService.clockIn({ company_id: selectedCompanyId });
+      const response = await timeService.clockIn({ company_id: activeCompanyId });
       await fetchStatus();
       
       // Show success message
@@ -175,32 +173,8 @@ export default function ModernDashboard() {
   };
 
   const handleCompanySelect = async (companyId) => {
-    setSelectedCompanyId(companyId);
-    localStorage.setItem('selectedCompanyId', companyId);
-    setShowCompanySelector(false);
-    
-    // Update user's current_company_id in backend
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/api/users/current-company`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ company_id: companyId })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update current company');
-      }
-    } catch (err) {
-      console.error('Error updating current company:', err);
-      alert('⚠️ Company selection saved locally, but failed to sync with server.\n\nYour selection will work, but may not persist across devices.');
-    }
-    
-    // Fetch company details
-    try {
+      // Fetch company details
       const token = localStorage.getItem('token');
       const response = await fetch(`${API_BASE}/api/companies/${companyId}`, {
         headers: {
@@ -210,12 +184,13 @@ export default function ModernDashboard() {
       
       if (response.ok) {
         const company = await response.json();
-        setSelectedCompany(company);
+        await switchCompany(companyId, company);
+        setShowCompanySelector(false);
         console.log(`✅ Company selected: ${company.name}`);
       }
     } catch (err) {
-      console.error('Error fetching company details:', err);
-      // Non-critical error, continue anyway
+      console.error('Error selecting company:', err);
+      alert('⚠️ Company selection saved locally, but failed to sync with server.\n\nYour selection will work, but may not persist across devices.');
     }
   };
 
@@ -224,7 +199,7 @@ export default function ModernDashboard() {
       setActiveView('entries');
       setShowMenu(false);
     } else if (view === 'expense') {
-      if (!selectedCompanyId) {
+      if (!activeCompanyId) {
         alert('⚠️ Company Selection Required\n\nPlease select a company before adding expenses.\n\nThis ensures expenses are tracked to the correct client.');
         setShowCompanySelector(true);
         return;
@@ -244,7 +219,7 @@ export default function ModernDashboard() {
         return (
           <EntriesView
             onClose={() => setActiveView('clock')}
-            selectedCompanyId={selectedCompanyId}
+            selectedCompanyId={activeCompanyId}
           />
         );
       case 'expenses':
@@ -258,11 +233,11 @@ export default function ModernDashboard() {
             >
               ← Back
             </motion.button>
-            <ExpensesManager selectedCompanyId={selectedCompanyId} />
+            <ExpensesManager selectedCompanyId={activeCompanyId} />
           </div>
         );
       case 'analytics':
-        return <ModernAnalytics onClose={() => setActiveView('clock')} selectedCompanyId={selectedCompanyId} />;
+        return <ModernAnalytics onClose={() => setActiveView('clock')} selectedCompanyId={activeCompanyId} />;
       case 'settings':
         return <ModernSettings onClose={() => setActiveView('clock')} />;
       case 'clock':
@@ -286,7 +261,7 @@ export default function ModernDashboard() {
     <div className="min-h-screen">
       {/* Persistent App Header */}
       <AppHeader
-        selectedCompany={selectedCompany}
+        selectedCompany={activeCompanyData}
         onSettingsClick={() => handleNavigate('settings')}
         onCompanyClick={() => setShowCompanySelector(true)}
         onMenuClick={() => setShowMenu(!showMenu)}
@@ -319,7 +294,7 @@ export default function ModernDashboard() {
                 </button>
                 <button
                   onClick={() => {
-                    if (!selectedCompanyId) {
+                    if (!activeCompanyId) {
                       alert('⚠️ Company Selection Required\n\nPlease select a company before adding manual entries.');
                       setShowCompanySelector(true);
                       setShowMenu(false);
@@ -340,8 +315,8 @@ export default function ModernDashboard() {
                 </button>
                 <button
                   onClick={() => {
-                    if (!selectedCompanyId) {
-                      alert('⚠️ Company Selection Required\n\nPlease select a company to view expenses.');
+                    if (!activeCompanyId) {
+                      alert('Please select a company to view expenses.');
                       setShowCompanySelector(true);
                       setShowMenu(false);
                       return;
@@ -356,7 +331,7 @@ export default function ModernDashboard() {
                 <hr className="border-gray-200 my-2" />
                 <button
                   onClick={() => {
-                    if (!selectedCompanyId) {
+                    if (!activeCompanyId) {
                       alert('Please select a company first');
                       setShowCompanySelector(true);
                       setShowMenu(false);
@@ -438,7 +413,7 @@ export default function ModernDashboard() {
         onExpenseAdded={() => {
           // Refresh data if needed
         }}
-        companyId={selectedCompanyId}
+        companyId={activeCompanyId}
       />
       
       <CompanyManager
@@ -463,22 +438,22 @@ export default function ModernDashboard() {
       <CompanySelector
         isOpen={showCompanySelector}
         onClose={() => {
-          if (selectedCompanyId) {
+          if (activeCompanyId) {
             setShowCompanySelector(false);
           }
         }}
-        selectedCompanyId={selectedCompanyId}
+        selectedCompanyId={activeCompanyId}
         onCompanySelect={handleCompanySelect}
-        isLocked={!selectedCompanyId}
+        isLocked={!activeCompanyId}
       />
       
       <MessagePreview
         isOpen={showMessagePreview}
         onClose={() => setShowMessagePreview(false)}
         forthnightDate={new Date()}
-        companyId={selectedCompanyId}
-        companyName={selectedCompany?.name}
-        companyEmail={selectedCompany?.manager_email}
+        companyId={activeCompanyId}
+        companyName={activeCompanyName}
+        companyEmail={activeCompanyData?.manager_email}
       />
 
       {/* Manual Entry Modal */}
