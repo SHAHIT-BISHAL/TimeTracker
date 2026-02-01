@@ -152,8 +152,22 @@ export default function CompanySelector({
     return (
       <div className="modal-overlay">
         <div className="company-selector loading">
-          <div className="spinner"></div>
-          <p>Loading companies...</p>
+          <div className="selector-header">
+            <div className="selector-title">
+              <Building2 className="icon" />
+              <h3>Loading Companies</h3>
+            </div>
+            <p className="selector-subtitle">Fetching your workspace...</p>
+          </div>
+          <div className="skeleton-list">
+            {[1, 2, 3].map((idx) => (
+              <div key={idx} className="skeleton-card">
+                <div className="skeleton-line w-40" />
+                <div className="skeleton-line w-56" />
+                <div className="skeleton-line w-24" />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -225,7 +239,12 @@ export default function CompanySelector({
         <div className="empty-state">
           <Building2 className="empty-icon" />
           <p>No companies yet</p>
-          <p className="empty-hint">Create your first company to get started</p>
+          <p className="empty-hint">
+            Create your first company to keep time entries, expenses, and analytics organized.
+          </p>
+          <p className="empty-hint">
+            You can add multiple companies later and switch between them.
+          </p>
         </div>
       )}
 

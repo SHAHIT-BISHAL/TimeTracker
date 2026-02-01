@@ -167,6 +167,40 @@
   font-size: 13px;
 }
 
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.skeleton-card {
+  background: #ffffff;
+  border: 2px solid #ecf0f1;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeleton-line {
+  height: 10px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #eceff1 25%, #f5f7fa 50%, #eceff1 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.skeleton-line.w-40 { width: 40%; }
+.skeleton-line.w-56 { width: 56%; }
+.skeleton-line.w-24 { width: 24%; }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 .company-form {
   background: white;
   padding: 20px;

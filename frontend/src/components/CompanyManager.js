@@ -9,7 +9,7 @@ const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostn
 /**
  * Company manager - Create and switch between companies (Premium SaaS modal)
  */
-export default function CompanyManager({ isOpen, onClose, onCompanyChanged, forceCreateMode = false }) {
+export default function CompanyManager({ isOpen, onClose, onCompanyChanged, forceCreateMode = false, isClockedIn = false }) {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -74,6 +74,12 @@ export default function CompanyManager({ isOpen, onClose, onCompanyChanged, forc
   };
 
   const handleSwitchCompany = async (companyId) => {
+    if (isClockedIn) {
+      const confirmSwitch = window.confirm(
+        'You are currently clocked in. Switching companies now will keep your active session tied to the current company.\n\nDo you want to continue?'
+      );
+      if (!confirmSwitch) return;
+    }
     try {
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
@@ -123,9 +129,28 @@ export default function CompanyManager({ isOpen, onClose, onCompanyChanged, forc
       )}
 
       {loading && !companies.length ? (
-        <p className="text-gray-600 text-center py-8">Loading companies...</p>
+        <div className="space-y-3 py-4">
+          {[1, 2, 3].map((idx) => (
+            <div key={idx} className="bg-gray-100 rounded-xl p-4 animate-pulse">
+              <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
+              <div className="h-3 bg-gray-200 rounded w-1/2" />
+            </div>
+          ))}
+          <p className="text-gray-500 text-sm text-center mt-4">Loading companies...</p>
+        </div>
       ) : (
         <>
+          {companies.length === 0 && !showForm && (
+            <div className="text-center py-8">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full mb-3">
+                <Building2 className="w-6 h-6 text-blue-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800">No companies yet</h3>
+              <p className="text-gray-600 text-sm mt-2">
+                Create your first company to organize time entries by client or project.
+              </p>
+            </div>
+          )}
           {/* Create Company Button */}
           <motion.button
             whileHover={{ scale: 1.05 }}

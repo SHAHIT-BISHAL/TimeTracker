@@ -25,8 +25,10 @@ api.interceptors.request.use((config) => {
         company_id: companyId
       };
     }
-    // Add to data for POST/PUT/PATCH requests
-    else if (config.data && typeof config.data === 'object' && !config.data.company_id) {
+    // Add to data for POST/PUT/PATCH requests (ensure body exists)
+    else if (!config.data) {
+      config.data = { company_id: companyId };
+    } else if (typeof config.data === 'object' && !config.data.company_id) {
       config.data = {
         ...config.data,
         company_id: companyId
@@ -46,7 +48,7 @@ export const authService = {
 
 export const timeService = {
   clockIn: (data = {}) => api.post('/time/clock-in', data),
-  clockOut: () => api.post('/time/clock-out'),
+  clockOut: (data = {}) => api.post('/time/clock-out', data),
   getStatus: () => api.get('/time/status'),
   getEntries: (startDate, endDate) =>
     api.get('/time/entries', { params: { startDate, endDate } })

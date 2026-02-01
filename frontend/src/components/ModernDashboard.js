@@ -113,9 +113,14 @@ export default function ModernDashboard() {
   };
 
   const handleClockOut = async () => {
+    if (!activeCompanyId) {
+      alert('⚠️ Company Selection Required\n\nPlease select a company before clocking out. This ensures your time is tracked correctly.');
+      setShowCompanySelector(true);
+      return;
+    }
     setLoading(true);
     try {
-      const response = await timeService.clockOut();
+      const response = await timeService.clockOut({ company_id: activeCompanyId });
       await fetchStatus();
       
       // Show duration summary
@@ -149,6 +154,12 @@ export default function ModernDashboard() {
   };
 
   const handleCompanySelect = async (companyId) => {
+    if (isClockedIn && activeCompanyId && Number(companyId) !== Number(activeCompanyId)) {
+      const confirmSwitch = window.confirm(
+        'You are currently clocked in. Switching companies now will keep your active session tied to the current company.\n\nDo you want to continue?'
+      );
+      if (!confirmSwitch) return;
+    }
     try {
       // Fetch company details
       const token = localStorage.getItem('token');
@@ -399,6 +410,7 @@ export default function ModernDashboard() {
           // Refresh data if needed
           setShowCompanyModal(false);
         }}
+        isClockedIn={isClockedIn}
       />
       
       <MessagingCenter

@@ -106,7 +106,7 @@ export default function ClockInDashboard({
         className="flex flex-col items-center justify-center py-8 sm:py-12"
       >
         {/* Status Badge */}
-        <motion.div variants={itemVariants} className="mb-6 sm:mb-8">
+        <motion.div variants={itemVariants} className="mb-4 sm:mb-6">
           <motion.div
             animate={isClockedIn ? { scale: [1, 1.05, 1] } : {}}
             transition={{ duration: 3, repeat: isClockedIn ? Infinity : 0, ease: 'easeInOut' }}
@@ -119,6 +119,21 @@ export default function ClockInDashboard({
             {isClockedIn ? '⏱️ You are clocked in' : '😴 You are clocked out'}
           </motion.div>
         </motion.div>
+
+        {/* Active Company While Clocked In */}
+        {isClockedIn && selectedCompany && (
+          <motion.div
+            variants={itemVariants}
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 sm:mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-200"
+          >
+            <Clock className="w-4 h-4 text-emerald-600" />
+            <span className="text-sm font-semibold">
+              Clocked in for: {selectedCompany.name}
+            </span>
+          </motion.div>
+        )}
 
         {/* Animated Timer */}
         <motion.div variants={itemVariants} className="mb-8 sm:mb-12 w-full flex justify-center">
