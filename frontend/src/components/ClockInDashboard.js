@@ -128,14 +128,14 @@ export default function ClockInDashboard({
           />
         </motion.div>
 
-        {/* Primary Action Button */}
+        {/* Primary Action Button - Mobile First with 44px min tap target */}
         <motion.button
           variants={itemVariants}
           whileHover={{ scale: isLocked ? 1 : 1.03, boxShadow: isLocked ? undefined : '0 20px 40px rgba(14, 165, 233, 0.4)' }}
           whileTap={{ scale: isLocked ? 1 : 0.97 }}
           onClick={isClockedIn ? onClockOut : onClockIn}
           disabled={loading || isLocked}
-          className={`min-w-[240px] sm:min-w-[280px] py-5 sm:py-6 rounded-2xl font-bold text-lg sm:text-xl mb-6 sm:mb-8 transition-all duration-300 shadow-xl ${
+          className={`w-full max-w-xs sm:max-w-sm md:max-w-md min-h-[56px] py-4 sm:py-5 md:py-6 px-6 rounded-2xl font-bold text-base sm:text-lg md:text-xl mb-6 sm:mb-8 transition-all duration-300 shadow-xl ${
             isLocked
               ? 'bg-gray-400 cursor-not-allowed opacity-60'
               : isClockedIn
@@ -157,7 +157,7 @@ export default function ClockInDashboard({
             variants={itemVariants}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white/90 backdrop-blur-sm rounded-xl p-5 shadow-lg border border-gray-200 w-full max-w-md"
+            className="bg-white/90 backdrop-blur-sm rounded-xl p-4 sm:p-5 md:p-6 shadow-lg border border-gray-200 w-full max-w-full sm:max-w-md mx-auto"
           >
             <h3 className="text-gray-800 font-semibold mb-3 flex items-center gap-2 text-sm">
               <Clock className="w-4 h-4 text-sky-500" />
@@ -181,7 +181,7 @@ export default function ClockInDashboard({
         )}
       </motion.div>
 
-      {/* Navigation Cards */}
+      {/* Navigation Cards - Mobile First with 44px min tap target */}
       <motion.div
         variants={itemVariants}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4"
@@ -194,11 +194,11 @@ export default function ClockInDashboard({
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => onNavigate(card.action)}
-              className={`bg-white/90 backdrop-blur-sm rounded-xl p-5 shadow-md hover:shadow-lg border border-gray-200 transition-all duration-200 text-left group`}
+              className={`bg-white/90 backdrop-blur-sm rounded-xl p-4 sm:p-5 min-h-[120px] sm:min-h-[140px] shadow-md hover:shadow-lg border border-gray-200 transition-all duration-200 text-left group flex flex-col justify-start`}
             >
-              <Icon className={`w-7 h-7 ${card.iconColor} mb-3 group-hover:scale-110 transition-transform duration-200`} />
-              <h3 className="font-semibold text-gray-800 text-base">{card.title}</h3>
-              <p className="text-xs text-gray-600 mt-1.5 leading-relaxed">{card.description}</p>
+              <Icon className={`w-8 h-8 sm:w-7 sm:h-7 ${card.iconColor} mb-3 group-hover:scale-110 transition-transform duration-200 flex-shrink-0`} />
+              <h3 className="font-semibold text-gray-800 text-base sm:text-base">{card.title}</h3>
+              <p className="text-sm sm:text-xs text-gray-600 mt-2 sm:mt-1.5 leading-relaxed">{card.description}</p>
             </motion.button>
           );
         })}

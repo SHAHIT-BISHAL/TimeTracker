@@ -4,15 +4,15 @@
 
 @layer components {
   .btn-primary {
-    @apply px-6 py-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer min-h-[44px];
+    @apply px-4 sm:px-6 py-3 bg-gradient-to-r from-sky-500 to-cyan-500 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 cursor-pointer min-h-[48px] text-base;
   }
 
   .btn-secondary {
-    @apply px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-2xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer min-h-[44px];
+    @apply px-4 sm:px-6 py-3 bg-gray-200 text-gray-800 font-semibold rounded-2xl shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer min-h-[48px] text-base;
   }
 
   .card {
-    @apply bg-white rounded-2xl shadow-lg p-6 transition-all duration-300;
+    @apply bg-white rounded-2xl shadow-lg p-4 sm:p-6 transition-all duration-300;
   }
 
   .card-hover {
@@ -37,55 +37,92 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   @apply bg-gradient-to-br from-slate-50 to-slate-100;
+  min-width: 320px; /* Minimum supported screen width */
 }
 
 html,
 body,
 #root {
   height: 100%;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
-/* Mobile friendly base styles */
+/* Mobile-first responsive base styles */
 html {
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0); /* Remove tap highlight on iOS */
 }
 
 :root {
-  /* base scaling: increase on small screens for readability */
-  font-size: 16px;
+  font-size: 16px; /* Base font size for mobile */
 }
 
-@media (max-width: 480px) {
-  :root { font-size: 16px; }
+/* iOS safe area handling */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(0px, env(safe-area-inset-left));
+    padding-right: max(0px, env(safe-area-inset-right));
+  }
 }
 
-@media (min-width: 481px) and (max-width: 768px) {
-  :root { font-size: 15px; }
+/* Touch-friendly controls - Apple HIG recommends 44x44px, Material 48x48px */
+button, 
+.btn,
+a[role="button"],
+input[type="button"],
+input[type="submit"] {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation; /* Disable double-tap zoom */
 }
 
-/* Touch friendly controls */
-button, .btn {
-  min-height: 44px; /* recommended touch target */
-  padding: 0.75rem 1rem;
-  border-radius: 8px;
-  font-size: 1rem;
+input, 
+textarea, 
+select {
+  font-size: 16px; /* Prevent iOS zoom on focus */
+  min-height: 44px;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
 }
 
-input, textarea, select {
-  font-size: 1rem;
-  padding: 0.6rem 0.75rem;
-  border-radius: 8px;
+/* Improve form input visibility on mobile */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
 }
 
-/* Make primary actions full width on small screens */
+/* Optimize scrolling on iOS */
+body, 
+.overflow-auto,
+.overflow-y-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text selection on buttons/interactive elements */
+button,
+.btn,
+a[role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Make tables responsive - horizontal scroll if needed */
 @media (max-width: 768px) {
-  .btn, button { width: 100%; display: block; }
-  .header-actions { width: 100%; justify-content: flex-end; }
-  .dashboard .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
-/* Reduce dense layouts on small screens */
-@media (max-width: 480px) {
-  .clock-card, .manual-entry-form .form-container, .setup-profile-modal, .company-card { padding: 1rem; }
+/* Ensure modals don't break on small screens */
+@media (max-width: 640px) {
+  .modal-content,
+  [class*="modal"] {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
 }

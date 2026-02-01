@@ -123,19 +123,19 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
 
   return (
     <div className="min-h-screen gradient-bg text-white">
-      {/* Header */}
+      {/* Header - Mobile First */}
       <header className="sticky top-0 z-40 backdrop-blur-md bg-black/20 border-b border-white/10">
-        <div className="max-w-4xl mx-auto px-4 py-6 flex justify-between items-center">
+        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6 flex justify-between items-center">
           <motion.h1 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="text-2xl font-bold"
+            className="text-xl sm:text-2xl font-bold"
           >
             Time Entries
           </motion.h1>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="p-2 sm:p-2.5 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/10 rounded-lg transition-colors"
             aria-label="Close"
           >
             <X className="w-6 h-6" />
@@ -143,8 +143,8 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Main Content - Mobile First */}
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-8">
         {/* Message */}
         <AnimatePresence>
           {message && (
@@ -164,12 +164,12 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
           )}
         </AnimatePresence>
 
-        {/* Add Entry Button */}
+        {/* Add Entry Button - Mobile First with 48px min tap target */}
         <motion.button
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={() => setShowAddModal(true)}
-          className="mb-6 w-full btn-primary flex items-center justify-center gap-2"
+          className="mb-6 w-full min-h-[48px] btn-primary flex items-center justify-center gap-2 text-base sm:text-lg font-semibold"
         >
           <Plus className="w-5 h-5" />
           Add New Entry
@@ -199,18 +199,18 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
           </motion.div>
         )}
 
-        {/* Entries List */}
+        {/* Entries List - Mobile First */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="space-y-4"
+          className="space-y-3 sm:space-y-4"
         >
           {entries.map((entry) => (
             <motion.div
               key={entry.id}
               variants={itemVariants}
-              className="bg-white/10 border border-white/20 rounded-lg p-6 hover:bg-white/15 transition-colors"
+              className="bg-white/10 border border-white/20 rounded-lg p-4 sm:p-6 hover:bg-white/15 transition-colors"
             >
               {editingId === entry.id ? (
                 // Edit Mode
@@ -227,7 +227,7 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
                       onChange={(e) =>
                         setEditData({ ...editData, clock_in: e.target.value })
                       }
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
+                      className="w-full px-3 sm:px-4 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
                     />
                   </div>
 
@@ -241,7 +241,7 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
                       onChange={(e) =>
                         setEditData({ ...editData, clock_out: e.target.value })
                       }
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
+                      className="w-full px-3 sm:px-4 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
                     />
                   </div>
 
@@ -256,7 +256,7 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
                       onChange={(e) =>
                         setEditData({ ...editData, project: e.target.value })
                       }
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
+                      className="w-full px-3 sm:px-4 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
                     />
                   </div>
 
@@ -270,28 +270,28 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
                         setEditData({ ...editData, notes: e.target.value })
                       }
                       rows="3"
-                      className="w-full px-4 py-2 border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50 resize-none"
+                      className="w-full px-3 sm:px-4 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50 resize-none"
                     />
                   </div>
 
-                  <div className="flex gap-2 pt-4">
+                  <div className="flex flex-col sm:flex-row gap-2 pt-4">
                     <button
                       onClick={saveEdit}
-                      className="flex-1 btn-primary"
+                      className="flex-1 min-h-[48px] btn-primary"
                     >
                       Save Changes
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
-                      className="flex-1 px-4 py-2 border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
+                      className="flex-1 min-h-[48px] px-4 py-2 border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
                     >
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
-                // View Mode
-                <div className="flex items-start justify-between">
+                // View Mode - Mobile First
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
                   <div className="flex-1">
                     <p className="text-sm text-gray-300">
                       <span className="font-semibold">Clock In:</span> {formatDateTime(entry.clock_in)}
@@ -316,17 +316,17 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
                       </p>
                     )}
                   </div>
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex flex-row sm:flex-col gap-2 ml-0 sm:ml-4">
                     <button
                       onClick={() => startEditing(entry)}
-                      className="p-2 hover:bg-white/10 rounded-lg text-cyan-300 transition-colors"
+                      className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/10 rounded-lg text-cyan-300 transition-colors flex-1 sm:flex-none"
                       title="Edit"
                     >
                       <Edit2 className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => deleteEntry(entry.id)}
-                      className="p-2 hover:bg-red-500/20 rounded-lg text-red-300 transition-colors"
+                      className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-red-500/20 rounded-lg text-red-300 transition-colors flex-1 sm:flex-none"
                       title="Delete"
                     >
                       <Trash2 className="w-5 h-5" />
@@ -352,12 +352,12 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setShowAddModal(false)}
             />
-            <div className="relative flex items-center justify-center min-h-screen p-4">
+            <div className="relative flex items-center justify-center min-h-screen p-3 sm:p-4">
               <motion.div
                 initial={{ scale: 0.95, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
-                className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl"
+                className="w-full max-w-md bg-white rounded-2xl p-5 sm:p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
               >
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Add Manual Entry</h2>
                 <ModernManualEntryForm

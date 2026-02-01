@@ -17,7 +17,8 @@ export default function ModalForm({ isOpen, onClose, title, children, size = 'md
     sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
-    xl: 'max-w-xl'
+    xl: 'max-w-xl',
+    full: 'max-w-full mx-4'
   };
 
   const backdropVariants = {
@@ -67,8 +68,8 @@ export default function ModalForm({ isOpen, onClose, title, children, size = 'md
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
           />
 
-          {/* Modal */}
-          <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          {/* Modal - Mobile First with padding and max height */}
+          <div className="fixed inset-0 flex items-center justify-center z-50 p-3 sm:p-4 md:p-6">
             <motion.div
               key="modal"
               variants={modalVariants}
@@ -76,16 +77,16 @@ export default function ModalForm({ isOpen, onClose, title, children, size = 'md
               animate="visible"
               exit="exit"
               onClick={(e) => e.stopPropagation()}
-              className={`w-full ${sizeClasses[size]} card`}
+              className={`w-full ${sizeClasses[size]} card max-h-[90vh] overflow-y-auto`}
             >
-              {/* Header */}
-              <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
-                <h2 className="text-2xl font-bold text-gray-800">{title}</h2>
+              {/* Header - Mobile First */}
+              <div className="flex justify-between items-center mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-800">{title}</h2>
                 <motion.button
                   whileHover={{ rotate: 90, scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={onClose}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
+                  className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-gray-100 rounded-lg transition-colors text-gray-600"
                   aria-label="Close modal"
                 >
                   <X className="w-6 h-6" />

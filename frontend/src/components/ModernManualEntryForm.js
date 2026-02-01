@@ -205,43 +205,43 @@ export default function ModernManualEntryForm({ onEntryAdded, triggerButton = tr
             </motion.div>
           )}
 
-          {/* Clock In */}
+          {/* Clock In - Mobile First with 44px min tap target */}
           <motion.div variants={itemVariants} className="space-y-2">
-            <label className="block text-gray-700 font-semibold text-sm">
+            <label className="block text-gray-700 font-semibold text-sm sm:text-base">
               Clock In Time
             </label>
             <div className="relative">
-              <Clock className="absolute left-4 top-3 w-5 h-5 text-sky-500 pointer-events-none" />
+              <Clock className="absolute left-3 sm:left-4 top-3 sm:top-3.5 w-5 h-5 text-sky-500 pointer-events-none z-10" />
               <input
                 type="datetime-local"
                 value={formData.clock_in}
                 onChange={(e) => setFormData({ ...formData, clock_in: e.target.value })}
                 required
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none text-gray-800"
+                className="w-full pl-11 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 text-base rounded-xl border border-gray-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none text-gray-800"
               />
             </div>
           </motion.div>
 
-          {/* Clock Out */}
+          {/* Clock Out - Mobile First with 44px min tap target */}
           <motion.div variants={itemVariants} className="space-y-2">
-            <label className="block text-gray-700 font-semibold text-sm">
+            <label className="block text-gray-700 font-semibold text-sm sm:text-base">
               Clock Out Time
             </label>
             <div className="relative">
-              <Clock className="absolute left-4 top-3 w-5 h-5 text-sky-500 pointer-events-none" />
+              <Clock className="absolute left-3 sm:left-4 top-3 sm:top-3.5 w-5 h-5 text-sky-500 pointer-events-none z-10" />
               <input
                 type="datetime-local"
                 value={formData.clock_out}
                 onChange={(e) => setFormData({ ...formData, clock_out: e.target.value })}
                 required
-                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none text-gray-800"
+                className="w-full pl-11 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-3.5 text-base rounded-xl border border-gray-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none text-gray-800"
               />
             </div>
           </motion.div>
 
-          {/* Notes */}
+          {/* Notes - Mobile First */}
           <motion.div variants={itemVariants} className="space-y-2">
-            <label className="block text-gray-700 font-semibold text-sm">
+            <label className="block text-gray-700 font-semibold text-sm sm:text-base">
               Notes (Optional)
             </label>
             <textarea
@@ -249,18 +249,18 @@ export default function ModernManualEntryForm({ onEntryAdded, triggerButton = tr
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               rows="3"
-              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none text-gray-800 resize-none"
+              className="w-full px-3 sm:px-4 py-3 text-base rounded-xl border border-gray-300 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition-all outline-none text-gray-800 resize-none"
             />
           </motion.div>
 
-          {/* Submit */}
+          {/* Submit - 44px min tap target */}
           <motion.button
             variants={itemVariants}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={loading}
-            className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full min-h-[48px] btn-primary disabled:opacity-50 disabled:cursor-not-allowed text-base sm:text-lg font-semibold"
           >
             {loading ? '⏳ Adding...' : '✅ Add Entry'}
           </motion.button>

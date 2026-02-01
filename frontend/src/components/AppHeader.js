@@ -121,22 +121,22 @@ const AppHeader = memo(({
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Menu Button */}
+            {/* Menu Button - Mobile First with 44px tap target */}
             {onMenuClick && (
               <motion.button
                 onClick={onMenuClick}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.2, duration: 0.3 }}
               >
-                <Menu size={22} className="text-gray-700" />
+                <Menu size={20} className="text-gray-700 sm:w-5 sm:h-5" />
               </motion.button>
             )}
 
-            {/* Company Selector Dropdown - Enhanced Visual Indicator */}
+            {/* Company Selector - Mobile responsive */}
             {selectedCompany ? (
               <div className="relative">
                 <motion.button
@@ -146,28 +146,28 @@ const AppHeader = memo(({
                       onCompanyClick();
                     }
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-lg"
+                  className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 min-h-[44px] bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg"
                   whileHover={{ scale: 1.05, y: -1 }}
                   whileTap={{ scale: 0.97 }}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.25, duration: 0.3 }}
                 >
-                  <Building2 size={18} className="flex-shrink-0" />
-                  <div className="flex flex-col items-start min-w-[140px] max-w-[200px]">
-                    <span className="text-xs opacity-90 font-normal">Active Company</span>
-                    <span className="truncate font-bold text-sm">{selectedCompany.name}</span>
+                  <Building2 size={16} className="flex-shrink-0 sm:w-[18px] sm:h-[18px]" />
+                  <div className="flex flex-col items-start min-w-[80px] sm:min-w-[140px] max-w-[120px] sm:max-w-[200px]">
+                    <span className="text-[10px] sm:text-xs opacity-90 font-normal hidden sm:block">Active Company</span>
+                    <span className="truncate font-bold text-xs sm:text-sm">{selectedCompany.name}</span>
                   </div>
-                  <ChevronDown size={16} className={`transition-transform flex-shrink-0 ${showCompanyDropdown ? 'rotate-180' : ''}`} />
+                  <ChevronDown size={14} className={`transition-transform flex-shrink-0 sm:w-4 sm:h-4 ${showCompanyDropdown ? 'rotate-180' : ''}`} />
                 </motion.button>
                 
-                {/* Dropdown hint */}
+                {/* Dropdown hint - hidden on mobile */}
                 {showCompanyDropdown && (
                   <motion.div
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="absolute right-0 mt-2 text-xs text-gray-700 whitespace-nowrap bg-white px-3 py-2 rounded-lg border border-gray-300 shadow-lg"
+                    className="hidden sm:block absolute right-0 mt-2 text-xs text-gray-700 whitespace-nowrap bg-white px-3 py-2 rounded-lg border border-gray-300 shadow-lg"
                   >
                     Click to switch company
                   </motion.div>
@@ -176,27 +176,28 @@ const AppHeader = memo(({
             ) : (
               <motion.button
                 onClick={onCompanyClick}
-                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all duration-200 text-sm font-semibold shadow-md animate-pulse"
+                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 min-h-[44px] bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all duration-200 text-xs sm:text-sm font-semibold shadow-md animate-pulse"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.97 }}
               >
-                <Building2 size={18} />
-                <span>Select Company</span>
+                <Building2 size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden sm:inline">Select Company</span>
+                <span className="sm:hidden">Select</span>
               </motion.button>
             )}
 
-            {/* Settings Button */}
+            {/* Settings Button - Mobile First with 44px tap target */}
             {showSettings && (
               <motion.button
                 onClick={onSettingsClick}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                className="p-2 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 whileHover={{ scale: 1.05, rotate: 45 }}
                 whileTap={{ scale: 0.95 }}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.3, duration: 0.3 }}
               >
-                <Settings size={22} className="text-gray-700" />
+                <Settings size={20} className="text-gray-700 sm:w-5 sm:h-5" />
               </motion.button>
             )}
 
