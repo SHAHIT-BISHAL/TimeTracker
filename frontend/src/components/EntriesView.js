@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Trash2, Edit2, Plus, Clock, AlertCircle } from 'lucide-react';
+import { X, Trash2, Edit2, Plus, Clock, AlertCircle, Calendar } from 'lucide-react';
 import axios from 'axios';
 import ModernManualEntryForm from './ModernManualEntryForm';
 
@@ -199,26 +199,29 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
           </motion.div>
         )}
 
-        {/* Entries List - Mobile First */}
+        {/* MOBILE: Card Layout (Hidden on tablet+) */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="space-y-3 sm:space-y-4"
+          className="space-y-3 md:hidden"
         >
           {entries.map((entry) => (
             <motion.div
               key={entry.id}
               variants={itemVariants}
-              className="bg-white/10 border border-white/20 rounded-lg p-4 sm:p-6 hover:bg-white/15 transition-colors"
+              className="bg-white/10 border border-white/20 rounded-xl p-4 hover:bg-white/15 transition-all duration-300"
             >
               {editingId === entry.id ? (
-                // Edit Mode
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-white mb-4">Edit Entry</h3>
+                // Edit Mode - Mobile
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-white mb-3 flex items-center gap-2">
+                    <Edit2 className="w-4 h-4" />
+                    Edit Entry
+                  </h3>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className="block text-xs font-semibold text-gray-300 mb-1.5">
                       Clock In
                     </label>
                     <input
@@ -227,12 +230,12 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
                       onChange={(e) =>
                         setEditData({ ...editData, clock_in: e.target.value })
                       }
-                      className="w-full px-3 sm:px-4 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
+                      className="w-full px-3 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className="block text-xs font-semibold text-gray-300 mb-1.5">
                       Clock Out
                     </label>
                     <input
@@ -241,12 +244,12 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
                       onChange={(e) =>
                         setEditData({ ...editData, clock_out: e.target.value })
                       }
-                      className="w-full px-3 sm:px-4 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
+                      className="w-full px-3 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className="block text-xs font-semibold text-gray-300 mb-1.5">
                       Project
                     </label>
                     <input
@@ -256,12 +259,12 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
                       onChange={(e) =>
                         setEditData({ ...editData, project: e.target.value })
                       }
-                      className="w-full px-3 sm:px-4 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
+                      className="w-full px-3 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                    <label className="block text-xs font-semibold text-gray-300 mb-1.5">
                       Notes
                     </label>
                     <textarea
@@ -269,73 +272,281 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
                       onChange={(e) =>
                         setEditData({ ...editData, notes: e.target.value })
                       }
-                      rows="3"
-                      className="w-full px-3 sm:px-4 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50 resize-none"
+                      rows="2"
+                      className="w-full px-3 py-3 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50 resize-none"
                     />
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                  <div className="flex gap-2 pt-2">
                     <button
                       onClick={saveEdit}
-                      className="flex-1 min-h-[48px] btn-primary"
+                      className="flex-1 min-h-[44px] px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-semibold hover:scale-105 transition-transform"
                     >
-                      Save Changes
+                      Save
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
-                      className="flex-1 min-h-[48px] px-4 py-2 border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
+                      className="flex-1 min-h-[44px] px-4 py-2 border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
                     >
                       Cancel
                     </button>
                   </div>
                 </div>
               ) : (
-                // View Mode - Mobile First
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-300">
-                      <span className="font-semibold">Clock In:</span> {formatDateTime(entry.clock_in)}
-                    </p>
-                    <p className="text-sm text-gray-300 mt-1">
-                      <span className="font-semibold">Clock Out:</span>{' '}
-                      {entry.clock_out ? formatDateTime(entry.clock_out) : 'Still clocked in'}
-                    </p>
+                // View Mode - Mobile Card
+                <div>
+                  {/* Date Header */}
+                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
+                    <Calendar className="w-4 h-4 text-sky-400" />
+                    <span className="text-sm font-bold text-white">
+                      {new Date(entry.clock_in).toLocaleDateString('en-US', { 
+                        weekday: 'short', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                    </span>
+                  </div>
+
+                  {/* Time Details */}
+                  <div className="space-y-2 mb-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-400">Clock In</span>
+                      <span className="text-sm font-medium text-white">
+                        {new Date(entry.clock_in).toLocaleTimeString('en-US', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs text-gray-400">Clock Out</span>
+                      <span className="text-sm font-medium text-white">
+                        {entry.clock_out 
+                          ? new Date(entry.clock_out).toLocaleTimeString('en-US', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })
+                          : 'Active'}
+                      </span>
+                    </div>
                     {entry.clock_out && (
-                      <p className="text-sm text-sky-300 font-semibold mt-2">
-                        Duration: {calculateDuration(entry.clock_in, entry.clock_out)}
-                      </p>
-                    )}
-                    {entry.project && (
-                      <p className="text-sm text-cyan-300 mt-2">
-                        <span className="font-semibold">Project:</span> {entry.project}
-                      </p>
-                    )}
-                    {entry.notes && (
-                      <p className="text-sm text-gray-300 mt-3 italic">
-                        <span className="font-semibold">Notes:</span> {entry.notes}
-                      </p>
+                      <div className="flex justify-between items-center pt-1">
+                        <span className="text-xs text-gray-400">Duration</span>
+                        <span className="text-base font-bold text-sky-400">
+                          {calculateDuration(entry.clock_in, entry.clock_out)}
+                        </span>
+                      </div>
                     )}
                   </div>
-                  <div className="flex flex-row sm:flex-col gap-2 ml-0 sm:ml-4">
+
+                  {/* Project & Notes */}
+                  {entry.project && (
+                    <div className="mb-2">
+                      <span className="inline-block px-2 py-1 bg-cyan-500/20 text-cyan-300 text-xs rounded-md font-medium">
+                        {entry.project}
+                      </span>
+                    </div>
+                  )}
+                  {entry.notes && (
+                    <p className="text-xs text-gray-300 italic mb-3 line-clamp-2">
+                      {entry.notes}
+                    </p>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-2 border-t border-white/10">
                     <button
                       onClick={() => startEditing(entry)}
-                      className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-white/10 rounded-lg text-cyan-300 transition-colors flex-1 sm:flex-none"
-                      title="Edit"
+                      className="flex-1 min-h-[44px] flex items-center justify-center gap-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-cyan-300 transition-all font-medium text-sm"
                     >
-                      <Edit2 className="w-5 h-5" />
+                      <Edit2 className="w-4 h-4" />
+                      Edit
                     </button>
                     <button
                       onClick={() => deleteEntry(entry.id)}
-                      className="p-2.5 sm:p-2 min-w-[44px] min-h-[44px] flex items-center justify-center hover:bg-red-500/20 rounded-lg text-red-300 transition-colors flex-1 sm:flex-none"
-                      title="Delete"
+                      className="flex-1 min-h-[44px] flex items-center justify-center gap-2 px-3 py-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-300 transition-all font-medium text-sm"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-4 h-4" />
+                      Delete
                     </button>
                   </div>
                 </div>
               )}
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* TABLET/DESKTOP: Table Layout (Hidden on mobile) */}
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="hidden md:block overflow-x-auto"
+        >
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-white/20">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Date</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Clock In</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Clock Out</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Duration</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Project</th>
+                <th className="text-left py-3 px-4 text-sm font-semibold text-gray-300">Notes</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-gray-300">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {entries.map((entry, index) => (
+                <motion.tr
+                  key={entry.id}
+                  variants={itemVariants}
+                  initial="hidden"
+                  animate="visible"
+                  transition={{ delay: index * 0.05 }}
+                  className="border-b border-white/10 hover:bg-white/5 transition-all duration-300"
+                >
+                  {editingId === entry.id ? (
+                    // Edit Mode - Table Row
+                    <td colSpan="7" className="py-4 px-4">
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <h3 className="font-semibold text-white mb-4 flex items-center gap-2">
+                          <Edit2 className="w-4 h-4" />
+                          Edit Entry
+                        </h3>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-300 mb-2">
+                              Clock In
+                            </label>
+                            <input
+                              type="datetime-local"
+                              value={editData.clock_in || ''}
+                              onChange={(e) =>
+                                setEditData({ ...editData, clock_in: e.target.value })
+                              }
+                              className="w-full px-4 py-2.5 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-300 mb-2">
+                              Clock Out
+                            </label>
+                            <input
+                              type="datetime-local"
+                              value={editData.clock_out || ''}
+                              onChange={(e) =>
+                                setEditData({ ...editData, clock_out: e.target.value })
+                              }
+                              className="w-full px-4 py-2.5 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-300 mb-2">
+                              Project
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="Project name (optional)"
+                              value={editData.project || ''}
+                              onChange={(e) =>
+                                setEditData({ ...editData, project: e.target.value })
+                              }
+                              className="w-full px-4 py-2.5 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-semibold text-gray-300 mb-2">
+                              Notes
+                            </label>
+                            <textarea
+                              value={editData.notes || ''}
+                              onChange={(e) =>
+                                setEditData({ ...editData, notes: e.target.value })
+                              }
+                              rows="3"
+                              className="w-full px-4 py-2.5 text-base border border-white/20 rounded-lg bg-black/50 text-white focus:border-sky-500 focus:ring-2 focus:ring-sky-200/50 resize-none"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={saveEdit}
+                            className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg font-semibold hover:scale-105 transition-transform"
+                          >
+                            Save Changes
+                          </button>
+                          <button
+                            onClick={() => setEditingId(null)}
+                            className="px-6 py-2.5 border border-white/20 rounded-lg hover:bg-white/10 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </td>
+                  ) : (
+                    // View Mode - Table Row
+                    <>
+                      <td className="py-3 px-4 text-sm text-white">
+                        {new Date(entry.clock_in).toLocaleDateString('en-US', { 
+                          month: 'short', 
+                          day: 'numeric',
+                          year: 'numeric'
+                        })}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-300">
+                        {new Date(entry.clock_in).toLocaleTimeString('en-US', { 
+                          hour: '2-digit', 
+                          minute: '2-digit' 
+                        })}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-300">
+                        {entry.clock_out 
+                          ? new Date(entry.clock_out).toLocaleTimeString('en-US', { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })
+                          : <span className="text-emerald-400 font-semibold">Active</span>}
+                      </td>
+                      <td className="py-3 px-4 text-sm font-bold text-sky-400">
+                        {entry.clock_out ? calculateDuration(entry.clock_in, entry.clock_out) : '-'}
+                      </td>
+                      <td className="py-3 px-4 text-sm">
+                        {entry.project ? (
+                          <span className="inline-block px-2 py-1 bg-cyan-500/20 text-cyan-300 text-xs rounded-md font-medium">
+                            {entry.project}
+                          </span>
+                        ) : (
+                          <span className="text-gray-500 text-xs">-</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-300 max-w-xs truncate">
+                        {entry.notes || <span className="text-gray-500 text-xs">-</span>}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex gap-2 justify-end">
+                          <button
+                            onClick={() => startEditing(entry)}
+                            className="p-2 hover:bg-white/10 rounded-lg text-cyan-300 transition-colors"
+                            title="Edit"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => deleteEntry(entry.id)}
+                            className="p-2 hover:bg-red-500/20 rounded-lg text-red-300 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </>
+                  )}
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
         </motion.div>
       </div>
 
