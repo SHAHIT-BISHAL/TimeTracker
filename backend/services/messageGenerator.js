@@ -166,18 +166,20 @@ function generateTextMessage({
 
     for (const [dateKey, range] of Object.entries(dailyRanges)) {
       const dayLabel = formatDayLabel(range.firstIn, timeZone);
+      const dateLabel = formatDateLabel(range.firstIn, timeZone);
       const firstIn = formatTimeLabel(range.firstIn, timeZone);
       const lastOut = range.lastOut ? formatTimeLabel(range.lastOut, timeZone) : 'Active';
       const hoursLabel = formatHoursLabel(range.totalMinutes);
-      message += `${dayLabel} ${firstIn} - ${lastOut} ${hoursLabel}\n`;
+      message += `${dayLabel} ${dateLabel} ${firstIn} - ${lastOut} ${hoursLabel}\n`;
     }
   } else if (Object.keys(dailyBreakdown).length > 0) {
     message += `DAILY TIME RANGES:\n`;
 
     for (const [date, minutes] of Object.entries(dailyBreakdown)) {
       const dayLabel = formatDayLabel(date, timeZone);
+      const dateLabel = formatDateLabel(date, timeZone);
       const hoursLabel = formatHoursLabel(minutes);
-      message += `${dayLabel} ${hoursLabel}\n`;
+      message += `${dayLabel} ${dateLabel} ${hoursLabel}\n`;
     }
   }
 
@@ -420,8 +422,7 @@ function generateHTMLMessage({
     <table>
       <thead>
         <tr>
-          <th>Date</th>
-          <th>Day</th>
+          <th>Day & Date</th>
           <th>First In</th>
           <th>Last Out</th>
           <th>Total Hours</th>
@@ -431,7 +432,7 @@ function generateHTMLMessage({
 
     if (Object.keys(dailyRanges).length > 0) {
       for (const [dateKey, range] of Object.entries(dailyRanges)) {
-        const dayName = new Date(range.firstIn).toLocaleDateString('en-AU', { weekday: 'long', timeZone });
+        const dayLabel = formatDayLabel(range.firstIn, timeZone);
         const dateLabel = formatDateLabel(range.firstIn, timeZone);
         const firstIn = formatTimeLabel(range.firstIn, timeZone);
         const lastOut = range.lastOut ? formatTimeLabel(range.lastOut, timeZone) : 'Active';
@@ -439,8 +440,7 @@ function generateHTMLMessage({
 
         html += `
         <tr>
-          <td>${dateLabel}</td>
-          <td>${dayName}</td>
+          <td>${dayLabel} ${dateLabel}</td>
           <td>${firstIn}</td>
           <td>${lastOut}</td>
           <td>${hoursLabel}</td>
@@ -448,13 +448,12 @@ function generateHTMLMessage({
       }
     } else {
       for (const [date, minutes] of Object.entries(dailyBreakdown)) {
-        const dayName = new Date(date).toLocaleDateString('en-AU', { weekday: 'long', timeZone });
+        const dayLabel = formatDayLabel(date, timeZone);
         const dateLabel = formatDateLabel(date, timeZone);
         const hoursLabel = formatHoursLabel(minutes);
         html += `
         <tr>
-          <td>${dateLabel}</td>
-          <td>${dayName}</td>
+          <td>${dayLabel} ${dateLabel}</td>
           <td>-</td>
           <td>-</td>
           <td>${hoursLabel}</td>
