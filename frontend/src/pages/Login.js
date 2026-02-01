@@ -48,6 +48,11 @@ export default function Login() {
       const response = await authService.login(username, password);
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      // Clear any previous company selection on fresh login
+      localStorage.removeItem('selectedCompanyId');
+      localStorage.removeItem('selectedCompanyData');
+      
       navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data?.error || 'Login failed');

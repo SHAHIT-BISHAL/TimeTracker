@@ -16,9 +16,10 @@ export default function CompanySelector({
   onClose = () => {}, 
   selectedCompanyId, 
   onCompanySelect, 
-  isLocked = false 
+  isLocked = false,
+  companies: companiesProp = null
 }) {
-  const [companies, setCompanies] = useState([]);
+  const [companies, setCompanies] = useState(companiesProp || []);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState('');
@@ -31,10 +32,12 @@ export default function CompanySelector({
   });
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !companiesProp) {
       fetchCompanies();
+    } else if (companiesProp) {
+      setCompanies(companiesProp);
     }
-  }, [isOpen]);
+  }, [isOpen, companiesProp]);
   
   if (!isOpen) return null;
 

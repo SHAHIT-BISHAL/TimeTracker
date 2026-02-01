@@ -34,11 +34,11 @@ export default function ModernDashboard() {
   const [showMessagingModal, setShowMessagingModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   
-  // Company selection state
+  // Company selection state - Get from CompanyGuard's validated context
   const [selectedCompanyId, setSelectedCompanyId] = useState(
     localStorage.getItem('selectedCompanyId') || null
   );
-  const [showCompanySelector, setShowCompanySelector] = useState(!selectedCompanyId);
+  const [showCompanySelector, setShowCompanySelector] = useState(false); // Don't force on load, CompanyGuard handles it
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [showMessagePreview, setShowMessagePreview] = useState(false);
   

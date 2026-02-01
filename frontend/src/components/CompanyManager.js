@@ -9,7 +9,7 @@ const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostn
 /**
  * Company manager - Create and switch between companies (Premium SaaS modal)
  */
-export default function CompanyManager({ isOpen, onClose, onCompanyChanged }) {
+export default function CompanyManager({ isOpen, onClose, onCompanyChanged, forceCreateMode = false }) {
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -18,13 +18,16 @@ export default function CompanyManager({ isOpen, onClose, onCompanyChanged }) {
     description: '',
     industry: ''
   });
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(forceCreateMode);
 
   useEffect(() => {
     if (isOpen) {
       fetchCompanies();
+      if (forceCreateMode) {
+        setShowForm(true);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, forceCreateMode]);
 
   const fetchCompanies = async () => {
     try {

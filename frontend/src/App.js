@@ -5,6 +5,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import ModernDashboard from './components/ModernDashboard';
 import PrivateRoute from './components/PrivateRoute';
+import CompanyGuard from './components/CompanyGuard';
 import DynamicBackground from './components/DynamicBackground';
 import './App.css';
 
@@ -19,7 +20,9 @@ function App() {
             path="/dashboard"
             element={
               <PrivateRoute>
-                <ModernDashboard />
+                <CompanyGuard>
+                  <ModernDashboard />
+                </CompanyGuard>
               </PrivateRoute>
             }
           />
@@ -27,7 +30,9 @@ function App() {
             path="/dashboard-full"
             element={
               <PrivateRoute>
-                <Dashboard />
+                <CompanyGuard>
+                  <Dashboard />
+                </CompanyGuard>
               </PrivateRoute>
             }
           />
