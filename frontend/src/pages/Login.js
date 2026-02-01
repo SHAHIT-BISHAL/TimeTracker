@@ -52,6 +52,7 @@ export default function Login() {
       // Clear any previous company selection on fresh login
       localStorage.removeItem('selectedCompanyId');
       localStorage.removeItem('selectedCompanyData');
+      sessionStorage.removeItem('companySwitchHintDismissed');
       
       navigate('/dashboard');
     } catch (err) {

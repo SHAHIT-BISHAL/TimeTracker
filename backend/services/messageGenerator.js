@@ -5,6 +5,80 @@
 
 import { formatDuration } from './fortnight.js';
 
+function formatTimeLabel(dateValue, timeZone) {
+  const date = new Date(dateValue);
+  const time = date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone
+  });
+
+  return time
+    .replace(':00', '')
+    .replace(' AM', 'am')
+    .replace(' PM', 'pm');
+}
+
+function formatDayLabel(dateValue, timeZone) {
+  const date = new Date(dateValue);
+  return date.toLocaleDateString('en-US', { weekday: 'short', timeZone });
+}
+
+function formatDateLabel(dateValue, timeZone) {
+  const date = new Date(dateValue);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone });
+}
+
+function formatHoursLabel(totalMinutes) {
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  if (mins === 0) {
+    return `${hours} hours`;
+  }
+  return `${hours}h ${mins}m`;
+}
+
+function getDateKey(dateValue, timeZone) {
+  const date = new Date(dateValue);
+  return new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone
+  }).format(date);
+}
+
+function getDailyRanges(timeEntries = [], timeZone) {
+  const ranges = {};
+
+  for (const entry of timeEntries) {
+    const dateKey = getDateKey(entry.clock_in, timeZone);
+    if (!ranges[dateKey]) {
+      ranges[dateKey] = {
+        firstIn: entry.clock_in,
+        lastOut: entry.clock_out || null,
+        totalMinutes: 0
+      };
+    }
+
+    const current = ranges[dateKey];
+    if (new Date(entry.clock_in) < new Date(current.firstIn)) {
+      current.firstIn = entry.clock_in;
+    }
+    if (entry.clock_out) {
+      if (!current.lastOut || new Date(entry.clock_out) > new Date(current.lastOut)) {
+        current.lastOut = entry.clock_out;
+      }
+    }
+    if (entry.duration_minutes) {
+      current.totalMinutes += entry.duration_minutes;
+    }
+  }
+
+  return ranges;
+}
+
 /**
  * Generate a fortnightly summary message
  * @param {object} data - Summary data
@@ -22,6 +96,8 @@ export function generateTimesheetMessage(data) {
     forthnightLabel,
     totalMinutes,
     dailyBreakdown = {},
+    timeEntries = [],
+    timeZone,
     expenses = [],
     userName = 'Employee'
   } = data;
@@ -35,6 +111,8 @@ export function generateTimesheetMessage(data) {
     forthnightLabel,
     duration,
     dailyBreakdown,
+    timeEntries,
+    timeZone,
     expenses,
     totalExpenses,
     userName
@@ -46,6 +124,8 @@ export function generateTimesheetMessage(data) {
     forthnightLabel,
     duration,
     dailyBreakdown,
+    timeEntries,
+    timeZone,
     expenses,
     totalExpenses,
     userName
@@ -70,6 +150,7 @@ function generateTextMessage({
   duration,
   dailyBreakdown,
   timeEntries = [],
+  timeZone,
   expenses,
   totalExpenses,
   userName
@@ -78,45 +159,25 @@ function generateTextMessage({
   message += `Here's my timesheet for ${companyName}\n`;
   message += `Period: ${forthnightLabel}\n\n`;
 
-  if (timeEntries && timeEntries.length > 0) {
-    message += `SHIFTS:\n`;
+  const dailyRanges = getDailyRanges(timeEntries, timeZone);
 
-    // Group entries by date
-    const byDate = {};
-    for (const entry of timeEntries) {
-      const date = new Date(entry.clock_in).toISOString().split('T')[0];
-      if (!byDate[date]) byDate[date] = [];
-      byDate[date].push(entry);
-    }
+  if (Object.keys(dailyRanges).length > 0) {
+    message += `DAILY TIME RANGES:\n`;
 
-    // Display each date's shifts
-    for (const [date, entries] of Object.entries(byDate)) {
-      const dateObj = new Date(date);
-      const formattedDate = dateObj.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-      
-      for (const entry of entries) {
-        const clockIn = new Date(entry.clock_in).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-        const clockOut = entry.clock_out ? new Date(entry.clock_out).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A';
-        const duration = entry.duration_minutes ? formatDuration(entry.duration_minutes).display : 'N/A';
-        message += `${formattedDate}: ${clockIn} - ${clockOut} - ${duration}\n`;
-      }
+    for (const [dateKey, range] of Object.entries(dailyRanges)) {
+      const dayLabel = formatDayLabel(range.firstIn, timeZone);
+      const firstIn = formatTimeLabel(range.firstIn, timeZone);
+      const lastOut = range.lastOut ? formatTimeLabel(range.lastOut, timeZone) : 'Active';
+      const hoursLabel = formatHoursLabel(range.totalMinutes);
+      message += `${dayLabel} ${firstIn} - ${lastOut} ${hoursLabel}\n`;
     }
   } else if (Object.keys(dailyBreakdown).length > 0) {
-    message += `SHIFTS:\n`;
+    message += `DAILY TIME RANGES:\n`;
 
     for (const [date, minutes] of Object.entries(dailyBreakdown)) {
-      const dateObj = new Date(date);
-      const formattedDate = dateObj.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-      const dayDuration = formatDuration(minutes);
-      message += `${formattedDate}: ${dayDuration.display}\n`;
+      const dayLabel = formatDayLabel(date, timeZone);
+      const hoursLabel = formatHoursLabel(minutes);
+      message += `${dayLabel} ${hoursLabel}\n`;
     }
   }
 
@@ -146,6 +207,8 @@ function generateHTMLMessage({
   forthnightLabel,
   duration,
   dailyBreakdown,
+  timeEntries = [],
+  timeZone,
   expenses,
   totalExpenses,
   userName
@@ -348,8 +411,10 @@ function generateHTMLMessage({
       <p>Total Hours (Decimal): <span class="summary-value">${duration.decimal}</span></p>
     </div>`;
 
+  const dailyRanges = getDailyRanges(timeEntries, timeZone);
+
   // Daily breakdown table
-  if (Object.keys(dailyBreakdown).length > 0) {
+  if (Object.keys(dailyRanges).length > 0 || Object.keys(dailyBreakdown).length > 0) {
     html += `
     <h2>Daily Breakdown</h2>
     <table>
@@ -357,22 +422,44 @@ function generateHTMLMessage({
         <tr>
           <th>Date</th>
           <th>Day</th>
-          <th>Hours</th>
+          <th>First In</th>
+          <th>Last Out</th>
+          <th>Total Hours</th>
         </tr>
       </thead>
       <tbody>`;
 
-    for (const [date, minutes] of Object.entries(dailyBreakdown)) {
-      const dayDuration = formatDuration(minutes);
-      const dateObj = new Date(date);
-      const dayName = dateObj.toLocaleDateString('en-AU', { weekday: 'long' });
+    if (Object.keys(dailyRanges).length > 0) {
+      for (const [dateKey, range] of Object.entries(dailyRanges)) {
+        const dayName = new Date(range.firstIn).toLocaleDateString('en-AU', { weekday: 'long', timeZone });
+        const dateLabel = formatDateLabel(range.firstIn, timeZone);
+        const firstIn = formatTimeLabel(range.firstIn, timeZone);
+        const lastOut = range.lastOut ? formatTimeLabel(range.lastOut, timeZone) : 'Active';
+        const hoursLabel = formatHoursLabel(range.totalMinutes);
 
-      html += `
+        html += `
         <tr>
-          <td>${date}</td>
+          <td>${dateLabel}</td>
           <td>${dayName}</td>
-          <td>${dayDuration.display}</td>
+          <td>${firstIn}</td>
+          <td>${lastOut}</td>
+          <td>${hoursLabel}</td>
         </tr>`;
+      }
+    } else {
+      for (const [date, minutes] of Object.entries(dailyBreakdown)) {
+        const dayName = new Date(date).toLocaleDateString('en-AU', { weekday: 'long', timeZone });
+        const dateLabel = formatDateLabel(date, timeZone);
+        const hoursLabel = formatHoursLabel(minutes);
+        html += `
+        <tr>
+          <td>${dateLabel}</td>
+          <td>${dayName}</td>
+          <td>-</td>
+          <td>-</td>
+          <td>${hoursLabel}</td>
+        </tr>`;
+      }
     }
 
     html += `
@@ -443,6 +530,19 @@ export function generateSampleMessage() {
     companyName: 'Acme Corporation',
     forthnightLabel: 'Mon 27 Jan – Sun 9 Feb 2026',
     totalMinutes: 280 * 60, // 280 hours
+    timeZone: 'Australia/Sydney',
+    timeEntries: [
+      { clock_in: '2026-01-27T02:00:00', clock_out: '2026-01-27T19:00:00', duration_minutes: 1020 },
+      { clock_in: '2026-01-28T02:15:00', clock_out: '2026-01-28T18:45:00', duration_minutes: 990 },
+      { clock_in: '2026-01-29T03:00:00', clock_out: '2026-01-29T19:00:00', duration_minutes: 960 },
+      { clock_in: '2026-01-30T02:30:00', clock_out: '2026-01-30T18:30:00', duration_minutes: 960 },
+      { clock_in: '2026-01-31T02:00:00', clock_out: '2026-01-31T17:00:00', duration_minutes: 900 },
+      { clock_in: '2026-02-03T02:00:00', clock_out: '2026-02-03T19:00:00', duration_minutes: 1020 },
+      { clock_in: '2026-02-04T02:00:00', clock_out: '2026-02-04T19:00:00', duration_minutes: 1020 },
+      { clock_in: '2026-02-05T02:00:00', clock_out: '2026-02-05T19:00:00', duration_minutes: 1020 },
+      { clock_in: '2026-02-06T02:00:00', clock_out: '2026-02-06T19:00:00', duration_minutes: 1020 },
+      { clock_in: '2026-02-09T02:00:00', clock_out: '2026-02-09T19:00:00', duration_minutes: 1020 }
+    ],
     dailyBreakdown: {
       '2026-01-27': 8 * 60,
       '2026-01-28': 8 * 60,

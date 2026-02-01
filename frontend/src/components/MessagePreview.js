@@ -41,9 +41,10 @@ export default function MessagePreview({
     try {
       setLoading(true);
       setError('');
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       const response = await axios.post(
         `${API_URL}/fortnightly/generate-message`,
-        { date: forthnightDate, company_id: companyId },
+        { date: forthnightDate, company_id: companyId, timezone: timeZone },
         config
       );
 
@@ -84,13 +85,15 @@ export default function MessagePreview({
     try {
       setSending(true);
       setError('');
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       
       const response = await axios.post(
         `${API_URL}/fortnightly/send-email`,
         {
           date: forthnightDate,
           company_id: companyId,
-          recipient_email: recipientEmail.trim()
+          recipient_email: recipientEmail.trim(),
+          timezone: timeZone
         },
         config
       );

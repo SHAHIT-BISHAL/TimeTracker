@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, memo } from 'react';
+import React, { useState, useEffect, useMemo, memo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Settings, Building2, LogOut, Menu, X, ChevronDown } from 'lucide-react';
@@ -56,6 +56,14 @@ const AppHeader = memo(({
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
   const [currentTime, setCurrentTime] = useState('');
   const [greeting, setGreeting] = useState('');
+  const [companyCount, setCompanyCount] = useState(0);
+  const [showCompanyHint, setShowCompanyHint] = useState(false);
+  const prevCompanyIdRef = useRef(null);
+
+  const dismissCompanyHint = () => {
+    setShowCompanyHint(false);
+    sessionStorage.setItem('companySwitchHintDismissed', 'true');
+  };
 
   useEffect(() => {
     const updateTime = () => {
@@ -73,6 +81,45 @@ const AppHeader = memo(({
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const dismissed = sessionStorage.getItem('companySwitchHintDismissed') === 'true';
+    if (dismissed) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+    fetch(`${API_URL}/companies`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        const count = Array.isArray(data) ? data.length : 0;
+        setCompanyCount(count);
+        if (count > 1) {
+          setShowCompanyHint(true);
+        }
+      })
+      .catch(() => {
+        // Fail silently to avoid blocking navigation
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!showCompanyHint) return;
+    const handleOutsideClick = () => dismissCompanyHint();
+    document.addEventListener('click', handleOutsideClick);
+    return () => document.removeEventListener('click', handleOutsideClick);
+  }, [showCompanyHint]);
+
+  useEffect(() => {
+    const prevId = prevCompanyIdRef.current;
+    if (prevId && selectedCompany?.id && prevId !== selectedCompany.id) {
+      dismissCompanyHint();
+    }
+    prevCompanyIdRef.current = selectedCompany?.id || null;
+  }, [selectedCompany]);
+
   const handleLogoClick = () => {
     navigate('/dashboard');
     setShowMobileMenu(false);
@@ -82,6 +129,7 @@ const AppHeader = memo(({
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('selectedCompanyId');
+    sessionStorage.removeItem('companySwitchHintDismissed');
     navigate('/login');
   };
 
@@ -160,18 +208,30 @@ const AppHeader = memo(({
                   </div>
                   <ChevronDown size={14} className={`transition-transform flex-shrink-0 sm:w-4 sm:h-4 ${showCompanyDropdown ? 'rotate-180' : ''}`} />
                 </motion.button>
-                
-                {/* Dropdown hint - hidden on mobile */}
-                {showCompanyDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    className="hidden sm:block absolute right-0 mt-2 text-xs text-gray-700 whitespace-nowrap bg-white px-3 py-2 rounded-lg border border-gray-300 shadow-lg"
-                  >
-                    Click to switch company
-                  </motion.div>
-                )}
+
+                {/* Switch hint - only if multiple companies and not dismissed */}
+                <AnimatePresence>
+                  {showCompanyHint && companyCount > 1 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      className="hidden sm:flex absolute right-0 mt-2 text-xs text-gray-700 whitespace-nowrap bg-white px-3 py-2 rounded-lg border border-gray-300 shadow-lg pointer-events-none"
+                    >
+                      <span>Click to switch company</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          dismissCompanyHint();
+                        }}
+                        className="ml-2 text-gray-500 hover:text-gray-800 pointer-events-auto"
+                        aria-label="Dismiss company switch hint"
+                      >
+                        ✕
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ) : (
               <motion.button

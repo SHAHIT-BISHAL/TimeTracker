@@ -271,101 +271,97 @@ export default function ModernDashboard() {
           className="fixed top-16 left-0 right-0 bg-white/95 backdrop-blur-lg border-b border-gray-200 shadow-lg z-40"
         >
           <div className="max-w-4xl mx-auto px-4 py-4 flex gap-2 flex-col">
-            {activeView === 'clock' && (
-              <>
-                <button
-                  onClick={() => handleNavigate('entries')}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
-                >
-                  📝 View Time Entries
-                </button>
-                <button
-                  onClick={() => {
-                    if (!activeCompanyId) {
-                      alert('⚠️ Company Selection Required\n\nPlease select a company before adding manual entries.');
-                      setShowCompanySelector(true);
-                      setShowMenu(false);
-                      return;
-                    }
-                    setShowManualEntryModal(true);
-                    setShowMenu(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
-                >
-                  ⏱️ Add Manual Entry
-                </button>
-                <button
-                  onClick={() => handleNavigate('expense')}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
-                >
-                  💰 Add Expense
-                </button>
-                <button
-                  onClick={() => {
-                    if (!activeCompanyId) {
-                      alert('Please select a company to view expenses.');
-                      setShowCompanySelector(true);
-                      setShowMenu(false);
-                      return;
-                    }
-                    setActiveView('expenses');
-                    setShowMenu(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
-                >
-                  📊 View Expenses
-                </button>
-                <hr className="border-gray-200 my-2" />
-                <button
-                  onClick={() => {
-                    if (!activeCompanyId) {
-                      alert('Please select a company first');
-                      setShowCompanySelector(true);
-                      setShowMenu(false);
-                      return;
-                    }
-                    setShowMessagePreview(true);
-                    setShowMenu(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
-                >
-                  <FileText className="w-4 h-4" />
-                  Generate Timesheet
-                </button>
-                <hr className="border-gray-200 my-2" />
-                <button
-                  onClick={() => {
-                    setShowCompanyModal(true);
-                    setShowMenu(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
-                >
-                  <Building2 className="w-4 h-4" />
-                  Manage Companies
-                </button>
-                <button
-                  onClick={() => {
-                    setShowMessagingModal(true);
-                    setShowMenu(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                  Messages
-                </button>
-                <button
-                  onClick={() => {
-                    setShowEmailModal(true);
-                    setShowMenu(false);
-                  }}
-                  className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
-                >
-                  <Mail className="w-4 h-4" />
-                  Email Settings
-                </button>
-                <hr className="border-gray-200 my-2" />
-              </>
-            )}
+            <button
+              onClick={() => handleNavigate('entries')}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
+            >
+              📝 View Time Entries
+            </button>
+            <button
+              onClick={() => {
+                if (!activeCompanyId) {
+                  alert('⚠️ Company Selection Required\n\nPlease select a company before adding manual entries.');
+                  setShowCompanySelector(true);
+                  setShowMenu(false);
+                  return;
+                }
+                setShowManualEntryModal(true);
+                setShowMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
+            >
+              ⏱️ Add Manual Entry
+            </button>
+            <button
+              onClick={() => handleNavigate('expense')}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
+            >
+              💰 Add Expense
+            </button>
+            <button
+              onClick={() => {
+                if (!activeCompanyId) {
+                  alert('Please select a company to view expenses.');
+                  setShowCompanySelector(true);
+                  setShowMenu(false);
+                  return;
+                }
+                setActiveView('expenses');
+                setShowMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm text-gray-700"
+            >
+              📊 View Expenses
+            </button>
+            <hr className="border-gray-200 my-2" />
+            <button
+              onClick={() => {
+                if (!activeCompanyId) {
+                  alert('Please select a company first');
+                  setShowCompanySelector(true);
+                  setShowMenu(false);
+                  return;
+                }
+                setShowMessagePreview(true);
+                setShowMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
+            >
+              <FileText className="w-4 h-4" />
+              Generate Timesheet
+            </button>
+            <hr className="border-gray-200 my-2" />
+            <button
+              onClick={() => {
+                setShowCompanyModal(true);
+                setShowMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
+            >
+              <Building2 className="w-4 h-4" />
+              Manage Companies
+            </button>
+            <button
+              onClick={() => {
+                setShowMessagingModal(true);
+                setShowMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Messages
+            </button>
+            <button
+              onClick={() => {
+                setShowEmailModal(true);
+                setShowMenu(false);
+              }}
+              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg transition-colors text-sm flex items-center gap-2 text-gray-700"
+            >
+              <Mail className="w-4 h-4" />
+              Email Settings
+            </button>
+            <hr className="border-gray-200 my-2" />
             <button
               onClick={() => {
                 setActiveView('analytics');

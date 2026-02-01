@@ -18,6 +18,16 @@ import {
 
 const router = express.Router();
 
+const getDateKey = (dateValue, timeZone) => {
+  const date = new Date(dateValue);
+  return new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    timeZone
+  }).format(date);
+};
+
 /**
  * GET /api/fortnightly/summary
  * Get timesheet summary for a specific fortnight and company
@@ -25,7 +35,7 @@ const router = express.Router();
  */
 router.get('/summary', authenticateToken, async (req, res) => {
   const userId = req.user.id;
-  const { date, company_id } = req.query;
+  const { date, company_id, timezone } = req.query;
   const queryDate = date ? new Date(date) : new Date();
 
   if (!company_id) {
@@ -90,7 +100,7 @@ router.get('/summary', authenticateToken, async (req, res) => {
         totalMinutes += entry.duration_minutes;
 
         // Create daily breakdown
-        const entryDate = new Date(entry.clock_in).toISOString().split('T')[0];
+        const entryDate = getDateKey(entry.clock_in, timezone);
         dailyBreakdown[entryDate] = (dailyBreakdown[entryDate] || 0) + entry.duration_minutes;
       }
     }
@@ -133,7 +143,7 @@ router.get('/summary', authenticateToken, async (req, res) => {
  */
 router.post('/generate-message', authenticateToken, async (req, res) => {
   const userId = req.user.id;
-  const { date, company_id } = req.body;
+  const { date, company_id, timezone } = req.body;
   const queryDate = date ? new Date(date) : new Date();
 
   if (!company_id) {
@@ -179,7 +189,7 @@ router.post('/generate-message', authenticateToken, async (req, res) => {
     for (const entry of timeEntries) {
       if (entry.duration_minutes) {
         totalMinutes += entry.duration_minutes;
-        const entryDate = new Date(entry.clock_in).toISOString().split('T')[0];
+        const entryDate = getDateKey(entry.clock_in, timezone);
         dailyBreakdown[entryDate] = (dailyBreakdown[entryDate] || 0) + entry.duration_minutes;
       }
     }
@@ -196,6 +206,8 @@ router.post('/generate-message', authenticateToken, async (req, res) => {
       forthnightLabel: forthnightInfo.label,
       totalMinutes,
       dailyBreakdown,
+      timeEntries,
+      timeZone: timezone,
       expenses: formattedExpenses,
       userName: user.username
     };
@@ -217,7 +229,7 @@ router.post('/generate-message', authenticateToken, async (req, res) => {
  */
 router.post('/send-email', authenticateToken, async (req, res) => {
   const userId = req.user.id;
-  const { date, company_id, recipient_email } = req.body;
+  const { date, company_id, recipient_email, timezone } = req.body;
   const queryDate = date ? new Date(date) : new Date();
 
   if (!company_id || !recipient_email) {
@@ -274,7 +286,7 @@ router.post('/send-email', authenticateToken, async (req, res) => {
     for (const entry of timeEntries) {
       if (entry.duration_minutes) {
         totalMinutes += entry.duration_minutes;
-        const entryDate = new Date(entry.clock_in).toISOString().split('T')[0];
+        const entryDate = getDateKey(entry.clock_in, timezone);
         dailyBreakdown[entryDate] = (dailyBreakdown[entryDate] || 0) + entry.duration_minutes;
       }
     }
@@ -291,6 +303,8 @@ router.post('/send-email', authenticateToken, async (req, res) => {
       forthnightLabel: forthnightInfo.label,
       totalMinutes,
       dailyBreakdown,
+      timeEntries,
+      timeZone: timezone,
       expenses: formattedExpenses,
       userName: user.username
     };
