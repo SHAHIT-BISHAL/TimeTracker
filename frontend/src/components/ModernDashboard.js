@@ -67,30 +67,6 @@ export default function ModernDashboard() {
     };
   }, [isClockedIn]);
 
-  // Load company details when selectedCompanyId changes
-  useEffect(() => {
-    if (selectedCompanyId && !selectedCompany) {
-      const loadCompanyDetails = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          const response = await fetch(`${API_BASE}/api/companies/${selectedCompanyId}`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          
-          if (response.ok) {
-            const company = await response.json();
-            setSelectedCompany(company);
-          }
-        } catch (err) {
-          console.error('Error fetching company details:', err);
-        }
-      };
-      loadCompanyDetails();
-    }
-  }, [selectedCompanyId]);
-
   const fetchStatus = async () => {
     try {
       const response = await timeService.getStatus();
@@ -250,8 +226,8 @@ export default function ModernDashboard() {
             onClockIn={handleClockIn}
             onClockOut={handleClockOut}
             onNavigate={handleNavigate}
-            isLocked={!selectedCompanyId}
-            selectedCompany={selectedCompany}
+            isLocked={!activeCompanyId}
+            selectedCompany={activeCompanyData}
           />
         );
     }
