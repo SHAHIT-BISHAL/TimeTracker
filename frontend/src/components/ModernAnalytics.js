@@ -13,9 +13,21 @@ export default function ModernAnalytics({ onClose, selectedCompanyId }) {
   const [stats, setStats] = useState({ totalHours: 0, avgPerDay: 0, overtimeHours: 0 });
   const [loading, setLoading] = useState(true);
 
+  // Clear analytics data when company changes to prevent showing stale data
   useEffect(() => {
     if (selectedCompanyId) {
+      // Reset all data immediately when company changes
+      setWeeklyData([]);
+      setProjectData([]);
+      setStats({ totalHours: 0, avgPerDay: 0, overtimeHours: 0 });
+      setLoading(true);
       fetchAnalytics();
+    } else {
+      // Clear if no company selected
+      setWeeklyData([]);
+      setProjectData([]);
+      setStats({ totalHours: 0, avgPerDay: 0, overtimeHours: 0 });
+      setLoading(false);
     }
   }, [selectedCompanyId]);
 
@@ -94,6 +106,50 @@ export default function ModernAnalytics({ onClose, selectedCompanyId }) {
           transition={{ duration: 2, repeat: Infinity }}
           className="w-12 h-12 border-4 border-sky-200 border-t-sky-500 rounded-full"
         />
+      </div>
+    );
+  }
+
+  // Show empty state if no data for selected company
+  const hasData = stats.totalHours > 0 || weeklyData.some(d => d.hours > 0);
+  
+  if (!loading && !hasData) {
+    return (
+      <div className="min-h-screen gradient-bg text-white py-12">
+        <div className="max-w-6xl mx-auto px-4">
+          <motion.button
+            onClick={onClose}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="mb-6 flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Back to Dashboard</span>
+          </motion.button>
+          
+          <div className="flex flex-col items-center justify-center py-20">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 200 }}
+              className="bg-white/10 rounded-full p-8 mb-6"
+            >
+              <BarChart3 className="w-20 h-20 text-gray-400" />
+            </motion.div>
+            <h2 className="text-2xl font-bold text-white mb-3">No Analytics Data Yet</h2>
+            <p className="text-gray-400 text-center max-w-md mb-6">
+              Start tracking time for {selectedCompanyId ? 'this company' : 'a company'} to see your productivity analytics and insights.
+            </p>
+            <motion.button
+              onClick={onClose}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold shadow-lg"
+            >
+              Go to Dashboard
+            </motion.button>
+          </div>
+        </div>
       </div>
     );
   }

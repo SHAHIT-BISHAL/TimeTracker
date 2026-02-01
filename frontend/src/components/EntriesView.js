@@ -17,9 +17,15 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
   const [editData, setEditData] = useState({});
   const [message, setMessage] = useState('');
 
+  // Clear entries when company changes to prevent showing stale data
   useEffect(() => {
     if (selectedCompanyId) {
+      setEntries([]); // Clear old data immediately
+      setLoading(true);
       fetchEntries();
+    } else {
+      setEntries([]); // Clear if no company selected
+      setLoading(false);
     }
   }, [selectedCompanyId]);
 
@@ -178,10 +184,19 @@ export default function EntriesView({ onClose, selectedCompanyId }) {
 
         {/* Empty State */}
         {!loading && entries.length === 0 && (
-          <div className="text-center py-12">
-            <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-300">No entries yet. Add one to get started!</p>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-16"
+          >
+            <div className="bg-white/5 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-12 h-12 text-gray-400" />
+            </div>
+            <h3 className="text-xl font-semibold text-white mb-2">No Time Entries Yet</h3>
+            <p className="text-gray-400 mb-6">
+              Start tracking time for this company to see your entries here.
+            </p>
+          </motion.div>
         )}
 
         {/* Entries List */}

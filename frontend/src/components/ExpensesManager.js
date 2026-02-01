@@ -15,9 +15,16 @@ export default function ExpensesManager({ selectedCompanyId }) {
   const [error, setError] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // Clear expenses when company changes to prevent showing stale data
   useEffect(() => {
     if (selectedCompanyId) {
+      setExpenses([]); // Clear old data immediately
+      setLoading(true);
+      setError('');
       fetchExpenses();
+    } else {
+      setExpenses([]); // Clear if no company selected
+      setLoading(false);
     }
   }, [selectedCompanyId]);
 
@@ -81,6 +88,26 @@ export default function ExpensesManager({ selectedCompanyId }) {
     return (
       <div className="flex justify-center items-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500"></div>
+      </div>
+    );
+  }
+
+  // Show empty state if no expenses
+  if (!loading && expenses.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 200 }}
+          className="bg-blue-50 rounded-full p-8 mb-6"
+        >
+          <Briefcase className="w-16 h-16 text-blue-400" />
+        </motion.div>
+        <h2 className="text-xl font-bold text-gray-800 mb-2">No Expenses Yet</h2>
+        <p className="text-gray-600 text-center max-w-md">
+          Add your first expense for this company to track your business and personal spending.
+        </p>
       </div>
     );
   }

@@ -136,8 +136,8 @@ const AppHeader = memo(({
               </motion.button>
             )}
 
-            {/* Company Selector Dropdown */}
-            {selectedCompany && (
+            {/* Company Selector Dropdown - Enhanced Visual Indicator */}
+            {selectedCompany ? (
               <div className="relative">
                 <motion.button
                   onClick={() => {
@@ -146,16 +146,19 @@ const AppHeader = memo(({
                       onCompanyClick();
                     }
                   }}
-                  className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm font-medium"
-                  whileHover={{ scale: 1.03 }}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 text-sm font-semibold shadow-md hover:shadow-lg"
+                  whileHover={{ scale: 1.05, y: -1 }}
                   whileTap={{ scale: 0.97 }}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.25, duration: 0.3 }}
                 >
-                  <Building2 size={16} />
-                  <span className="max-w-[120px] truncate">{selectedCompany.name}</span>
-                  <ChevronDown size={14} className={`transition-transform ${showCompanyDropdown ? 'rotate-180' : ''}`} />
+                  <Building2 size={18} className="flex-shrink-0" />
+                  <div className="flex flex-col items-start min-w-[140px] max-w-[200px]">
+                    <span className="text-xs opacity-90 font-normal">Active Company</span>
+                    <span className="truncate font-bold text-sm">{selectedCompany.name}</span>
+                  </div>
+                  <ChevronDown size={16} className={`transition-transform flex-shrink-0 ${showCompanyDropdown ? 'rotate-180' : ''}`} />
                 </motion.button>
                 
                 {/* Dropdown hint */}
@@ -164,12 +167,22 @@ const AppHeader = memo(({
                     initial={{ opacity: 0, y: -5 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -5 }}
-                    className="absolute right-0 mt-1 text-xs text-gray-600 whitespace-nowrap bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200"
+                    className="absolute right-0 mt-2 text-xs text-gray-700 whitespace-nowrap bg-white px-3 py-2 rounded-lg border border-gray-300 shadow-lg"
                   >
                     Click to switch company
                   </motion.div>
                 )}
               </div>
+            ) : (
+              <motion.button
+                onClick={onCompanyClick}
+                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all duration-200 text-sm font-semibold shadow-md animate-pulse"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <Building2 size={18} />
+                <span>Select Company</span>
+              </motion.button>
             )}
 
             {/* Settings Button */}
