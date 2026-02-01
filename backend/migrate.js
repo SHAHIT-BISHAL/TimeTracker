@@ -13,9 +13,12 @@ const schema = `
 -- Companies table
 CREATE TABLE IF NOT EXISTS companies (
   id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
   industry TEXT,
+  pay_rate DOUBLE PRECISION DEFAULT 0,
+  manager_email TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );

@@ -46,7 +46,29 @@ const upload = multer({
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    const companyId = req.user.current_company_id;
+    const companyId = req.query.company_id || req.user.current_company_id;
+
+    if (!companyId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Company context required',
+        code: 'NO_COMPANY_SELECTED'
+      });
+    }
+
+    // Verify user has access to company
+    const accessCheck = await pool.query(
+      'SELECT id FROM user_companies WHERE user_id = $1 AND company_id = $2',
+      [userId, companyId]
+    );
+
+    if (accessCheck.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied',
+        code: 'INVALID_COMPANY_ACCESS'
+      });
+    }
 
     const result = await pool.query(
       'SELECT * FROM expenses WHERE user_id = $1 AND company_id = $2 ORDER BY expense_date DESC',
@@ -75,15 +97,18 @@ router.get('/:id', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     const expenseId = req.params.id;
 
+    // Get expense and verify both user_id and company access
     const result = await pool.query(
-      'SELECT * FROM expenses WHERE id = $1 AND user_id = $2',
+      `SELECT e.* FROM expenses e
+       JOIN user_companies uc ON e.company_id = uc.company_id
+       WHERE e.id = $1 AND e.user_id = $2 AND uc.user_id = $2`,
       [expenseId, userId]
     );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'Expense not found'
+        error: 'Expense not found or access denied'
       });
     }
 

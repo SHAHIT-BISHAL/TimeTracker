@@ -24,13 +24,13 @@ router.post('/clock-in', authenticateToken, async (req, res) => {
       });
     }
 
-    // Verify user owns the company
-    const company = await dbGet(
-      'SELECT id FROM companies WHERE id = ? AND user_id = ?',
-      [companyId, userId]
+    // Verify user has access to the company
+    const access = await dbGet(
+      'SELECT * FROM user_companies WHERE user_id = ? AND company_id = ?',
+      [userId, companyId]
     );
 
-    if (!company) {
+    if (!access) {
       return res.status(403).json({ 
         error: 'You do not have access to this company',
         code: 'INVALID_COMPANY'

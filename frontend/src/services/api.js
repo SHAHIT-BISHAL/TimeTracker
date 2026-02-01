@@ -1,4 +1,5 @@
 import axios from 'axios';
+import companyContext from './companyContext';
 
 // If REACT_APP_API_URL is set, use it. Otherwise construct a host-based API URL so
 // mobile devices accessing the dev server via LAN use the same host
@@ -14,6 +15,26 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
+  // Add company context to requests automatically
+  const companyId = companyContext.getActiveCompanyId();
+  if (companyId) {
+    // Add to params for GET requests
+    if (config.method === 'get') {
+      config.params = {
+        ...config.params,
+        company_id: companyId
+      };
+    }
+    // Add to data for POST/PUT/PATCH requests
+    else if (config.data && typeof config.data === 'object' && !config.data.company_id) {
+      config.data = {
+        ...config.data,
+        company_id: companyId
+      };
+    }
+  }
+
   return config;
 });
 

@@ -7,13 +7,34 @@ const router = express.Router();
 // Add manual time entry
 router.post('/', authenticateToken, async (req, res) => {
   const userId = req.user.id;
-  const { clock_in, clock_out, notes, project } = req.body;
+  const { clock_in, clock_out, notes, project, company_id } = req.body;
 
   try {
-    // Get user's current company
-    const user = await dbGet('SELECT current_company_id FROM users WHERE id = ?', [userId]);
-    if (!user || !user.current_company_id) {
-      return res.status(400).json({ error: 'No company selected' });
+    // Get company_id from request or user's current company
+    let companyId = company_id;
+    if (!companyId) {
+      const user = await dbGet('SELECT current_company_id FROM users WHERE id = ?', [userId]);
+      companyId = user?.current_company_id;
+    }
+
+    if (!companyId) {
+      return res.status(400).json({ 
+        error: 'No company selected',
+        code: 'NO_COMPANY_SELECTED'
+      });
+    }
+
+    // Verify user has access to company
+    const access = await dbGet(
+      'SELECT * FROM user_companies WHERE user_id = ? AND company_id = ?',
+      [userId, companyId]
+    );
+
+    if (!access) {
+      return res.status(403).json({ 
+        error: 'Access denied',
+        code: 'INVALID_COMPANY_ACCESS'
+      });
     }
 
     if (!clock_in || !clock_out) {
@@ -32,7 +53,7 @@ router.post('/', authenticateToken, async (req, res) => {
       `INSERT INTO time_entries 
        (user_id, company_id, clock_in, clock_out, duration_minutes, notes, project, is_manual) 
        VALUES (?, ?, ?, ?, ?, ?, ?, true)`,
-      [userId, user.current_company_id, clock_in, clock_out, durationMinutes, notes || null, project || null]
+      [userId, companyId, clock_in, clock_out, durationMinutes, notes || null, project || null]
     );
 
     const entry = await dbGet('SELECT * FROM time_entries WHERE id = ?', [result.id]);
@@ -45,18 +66,38 @@ router.post('/', authenticateToken, async (req, res) => {
 // Get all manual entries for user
 router.get('/', authenticateToken, async (req, res) => {
   const userId = req.user.id;
+  const { company_id } = req.query;
 
   try {
-    const user = await dbGet('SELECT current_company_id FROM users WHERE id = ?', [userId]);
-    if (!user || !user.current_company_id) {
+    // Get company_id from query or user's current company
+    let companyId = company_id;
+    if (!companyId) {
+      const user = await dbGet('SELECT current_company_id FROM users WHERE id = ?', [userId]);
+      companyId = user?.current_company_id;
+    }
+
+    if (!companyId) {
       return res.json([]);
+    }
+
+    // Verify user has access to company
+    const access = await dbGet(
+      'SELECT * FROM user_companies WHERE user_id = ? AND company_id = ?',
+      [userId, companyId]
+    );
+
+    if (!access) {
+      return res.status(403).json({ 
+        error: 'Access denied',
+        code: 'INVALID_COMPANY_ACCESS'
+      });
     }
 
     const entries = await dbAll(
       `SELECT * FROM time_entries 
        WHERE user_id = ? AND company_id = ? AND is_manual = true
        ORDER BY clock_in DESC`,
-      [userId, user.current_company_id]
+      [userId, companyId]
     );
 
     res.json(entries);
