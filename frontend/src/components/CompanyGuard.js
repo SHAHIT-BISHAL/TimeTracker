@@ -25,6 +25,7 @@ export default function CompanyGuard({ children }) {
   const [companies, setCompanies] = useState([]);
   const [showCompanyCreation, setShowCompanyCreation] = useState(false);
   const [showCompanySelector, setShowCompanySelector] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     checkCompanyStatus();
@@ -32,10 +33,17 @@ export default function CompanyGuard({ children }) {
 
   const checkCompanyStatus = async () => {
     setLoading(true);
+    setError(null);
     
     try {
       // Fetch user's companies
       const token = localStorage.getItem('token');
+      if (!token) {
+        setError('No authentication token found');
+        setLoading(false);
+        return;
+      }
+
       const response = await axios.get(`${API_URL}/companies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -60,6 +68,7 @@ export default function CompanyGuard({ children }) {
       }
     } catch (err) {
       console.error('Error checking company status:', err);
+      setError(`Failed to load companies: ${err.message}`);
       // On error, assume need to select company
       setShowCompanySelector(true);
     } finally {
@@ -150,6 +159,25 @@ export default function CompanyGuard({ children }) {
   if (showCompanySelector) {
     return (
       <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="absolute top-4 left-4 right-4 bg-red-50 border border-red-200 rounded-lg p-4 max-w-md"
+          >
+            <p className="text-red-800 font-semibold">Connection Error</p>
+            <p className="text-red-700 text-sm mt-1">{error}</p>
+            <p className="text-red-600 text-xs mt-2">
+              Make sure your backend is running and the reverse proxy is configured correctly.
+            </p>
+            <button
+              onClick={checkCompanyStatus}
+              className="mt-3 px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+            >
+              Retry
+            </button>
+          </motion.div>
+        )}
         <CompanySelector
           isOpen={true}
           onClose={() => {}} // Prevent closing - must select

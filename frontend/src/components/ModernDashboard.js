@@ -24,7 +24,7 @@ import MessagePreview from './MessagePreview';
  * Manages navigation between different views and handles clock in/out logic
  */
 export default function ModernDashboard() {
-const API_BASE = getApiUrl().replace('/api', '');
+const API_URL = getApiUrl();
   const { activeCompanyId, activeCompanyName, activeCompanyData, switchCompany } = useActiveCompany();
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [currentEntry, setCurrentEntry] = useState(null);
@@ -164,7 +164,7 @@ const API_BASE = getApiUrl().replace('/api', '');
     try {
       // Fetch company details
       const token = localStorage.getItem('token');
-      const response = await fetch(`${API_BASE}/api/companies/${companyId}`, {
+      const response = await fetch(`${API_URL}/companies/${companyId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
