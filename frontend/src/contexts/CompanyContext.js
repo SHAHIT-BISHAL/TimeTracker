@@ -12,27 +12,34 @@ export function CompanyProvider({ children }) {
   const [activeCompanyName, setActiveCompanyName] = useState(null);
   const [activeCompanyData, setActiveCompanyData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Restore company context from localStorage on mount
   useEffect(() => {
-    const storedCompanyId = localStorage.getItem('selectedCompanyId');
-    const storedCompanyData = localStorage.getItem('selectedCompanyData');
+    try {
+      const storedCompanyId = localStorage.getItem('selectedCompanyId');
+      const storedCompanyData = localStorage.getItem('selectedCompanyData');
 
-    if (storedCompanyId) {
-      setActiveCompanyId(storedCompanyId);
-      
-      if (storedCompanyData) {
-        try {
-          const companyData = JSON.parse(storedCompanyData);
-          setActiveCompanyName(companyData.name);
-          setActiveCompanyData(companyData);
-        } catch (err) {
-          console.error('Error parsing company data:', err);
+      if (storedCompanyId) {
+        setActiveCompanyId(storedCompanyId);
+        
+        if (storedCompanyData) {
+          try {
+            const companyData = JSON.parse(storedCompanyData);
+            setActiveCompanyName(companyData.name);
+            setActiveCompanyData(companyData);
+          } catch (err) {
+            console.error('Error parsing company data:', err);
+            localStorage.removeItem('selectedCompanyData');
+          }
         }
       }
+    } catch (err) {
+      console.error('Error restoring company context:', err);
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   }, []);
 
   // Persist to localStorage whenever company changes
@@ -172,6 +179,7 @@ export function useActiveCompany() {
   const context = useContext(CompanyContext);
   
   if (!context) {
+    console.error('useActiveCompany hook used outside CompanyProvider!');
     throw new Error('useActiveCompany must be used within a CompanyProvider');
   }
   

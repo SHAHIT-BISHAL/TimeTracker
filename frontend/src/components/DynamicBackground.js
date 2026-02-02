@@ -66,12 +66,17 @@ const DynamicBackground = memo(({ children }) => {
       const timeOfDay = getTimeOfDay();
       
       try {
-        const weather = await getWeather();
+        const weather = await Promise.race([
+          getWeather(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000))
+        ]);
         setBackgroundState({
           timeOfDay,
           weather: weather.condition
         });
       } catch (error) {
+        // Silently fail - use default weather
+        console.error('Background weather update error:', error.message);
         setBackgroundState(prev => ({
           ...prev,
           timeOfDay
