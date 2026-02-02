@@ -1,10 +1,8 @@
 import axios from 'axios';
 import { getApiUrl } from '../utils/apiUrl.js';
 
-const API_URL = getApiUrl();
-
 const api = axios.create({
-  baseURL: API_URL
+  baseURL: getApiUrl()
 });
 
 // Add token to requests
