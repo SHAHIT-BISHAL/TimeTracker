@@ -68,6 +68,13 @@ export default class ErrorBoundary extends React.Component {
               </button>
               
               <button
+                onClick={() => window.location.href = '/diagnostic'}
+                className="w-full px-4 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors font-semibold text-sm"
+              >
+                🔍 Run API Diagnostic
+              </button>
+
+              <button
                 onClick={() => window.location.reload()}
                 className="w-full px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-semibold"
               >

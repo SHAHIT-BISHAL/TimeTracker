@@ -5,6 +5,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import ApiDiagnostic from './pages/ApiDiagnostic';
 import ModernDashboard from './components/ModernDashboard';
 import PrivateRoute from './components/PrivateRoute';
 import CompanyGuard from './components/CompanyGuard';
@@ -20,6 +21,7 @@ function App() {
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/diagnostic" element={<ApiDiagnostic />} />
               <Route
                 path="/dashboard"
                 element={
