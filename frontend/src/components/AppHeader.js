@@ -88,22 +88,28 @@ const AppHeader = memo(({
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const { getApiUrl } = await import('../utils/apiUrl.js');
-    const API_URL = getApiUrl();
-    fetch(`${API_URL}/companies`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data) => {
-        const count = Array.isArray(data) ? data.length : 0;
-        setCompanyCount(count);
-        if (count > 1) {
-          setShowCompanyHint(true);
-        }
-      })
-      .catch(() => {
-        // Fail silently to avoid blocking navigation
-      });
+    (async () => {
+      try {
+        const { getApiUrl } = await import('../utils/apiUrl.js');
+        const API_URL = getApiUrl();
+        fetch(`${API_URL}/companies`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then((res) => (res.ok ? res.json() : []))
+          .then((data) => {
+            const count = Array.isArray(data) ? data.length : 0;
+            setCompanyCount(count);
+            if (count > 1) {
+              setShowCompanyHint(true);
+            }
+          })
+          .catch(() => {
+            // Fail silently to avoid blocking navigation
+          });
+      } catch (err) {
+        console.error('Failed to load API URL:', err);
+      }
+    })();
   }, []);
 
   useEffect(() => {
