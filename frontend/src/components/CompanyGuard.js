@@ -39,27 +39,41 @@ export default function CompanyGuard({ children }) {
       // Fetch user's companies
       const token = localStorage.getItem('token');
       if (!token) {
+        console.error('No token in localStorage');
         setError('No authentication token found');
         setLoading(false);
         return;
       }
 
+      console.log('Fetching companies from:', API_URL);
+      
+      // Add timeout to prevent infinite loading
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await axios.get(`${API_URL}/companies`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal
       });
+
+      clearTimeout(timeoutId);
+      console.log('Companies fetched successfully:', response.data);
 
       const userCompanies = response.data || [];
       setCompanies(userCompanies);
 
       if (userCompanies.length === 0) {
+        console.log('No companies found, showing creation screen');
         // No companies - force creation
         setShowCompanyCreation(true);
         setShowCompanySelector(false);
       } else if (!activeCompanyId || !userCompanies.find(c => c.id === parseInt(activeCompanyId))) {
+        console.log('Companies found, showing selector');
         // Companies exist but none selected or invalid selection
         setShowCompanySelector(true);
         setShowCompanyCreation(false);
       } else {
+        console.log('Valid company already selected');
         // Valid company selected - ensure context has full data
         const company = userCompanies.find(c => c.id === parseInt(activeCompanyId));
         if (company) {
@@ -68,7 +82,24 @@ export default function CompanyGuard({ children }) {
       }
     } catch (err) {
       console.error('Error checking company status:', err);
-      setError(`Failed to load companies: ${err.message}`);
+      let errorMessage = 'Failed to load companies';
+      
+      if (err.code === 'ECONNABORTED') {
+        errorMessage = 'Request timeout - backend not responding';
+      } else if (err.response?.status === 401) {
+        errorMessage = 'Unauthorized - token expired. Please login again.';
+      } else if (err.response?.status === 403) {
+        errorMessage = 'Access denied - invalid permissions';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'API endpoint not found - check your configuration';
+      } else if (err.message === 'Network Error') {
+        errorMessage = 'Network error - backend not accessible. Check reverse proxy configuration.';
+      } else {
+        errorMessage = `Error: ${err.message}`;
+      }
+      
+      setError(errorMessage);
+      console.error('Full error:', errorMessage);
       // On error, assume need to select company
       setShowCompanySelector(true);
     } finally {
@@ -195,6 +226,34 @@ export default function CompanyGuard({ children }) {
     return children;
   }
 
-  // Fallback - shouldn't reach here
-  return <Navigate to="/login" replace />;
+  // Fallback - shouldn't reach here, but show helpful message if it does
+  return (
+    <div className="min-h-screen gradient-bg flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-md bg-white rounded-xl shadow-2xl p-8"
+      >
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Company Selection</h2>
+        <p className="text-gray-600 mb-4">
+          Unable to proceed - please select a company or create one first.
+        </p>
+        <button
+          onClick={checkCompanyStatus}
+          className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+        >
+          Try Again
+        </button>
+        <button
+          onClick={() => {
+            localStorage.clear();
+            window.location.href = '/login';
+          }}
+          className="w-full mt-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+        >
+          Login Again
+        </button>
+      </motion.div>
+    </div>
+  );
 }
