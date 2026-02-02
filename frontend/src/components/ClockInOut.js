@@ -3,7 +3,9 @@ import axios from 'axios';
 import { timeService } from '../services/api';
 import './ClockInOut.css';
 
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+import { getApiUrl } from '../utils/apiUrl.js';
+
+const API_URL = getApiUrl();
 
 export default function ClockInOut() {
   const [isClockedIn, setIsClockedIn] = useState(false);

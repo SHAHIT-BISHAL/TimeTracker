@@ -110,7 +110,8 @@ export function CompanyProvider({ children }) {
    * @param {object} companyData - Company details
    */
   const switchCompany = async (companyId, companyData = null) => {
-    const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+    const { getApiUrl } = await import('../utils/apiUrl.js');
+    const API_URL = getApiUrl();
     const token = localStorage.getItem('token');
 
     try {

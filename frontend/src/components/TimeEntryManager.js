@@ -4,7 +4,9 @@ import { Trash2, Edit2, Download } from 'lucide-react';
 import ManualEntryForm from './ManualEntryForm';
 import './TimeEntryManager.css';
 
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+import { getApiUrl } from '../utils/apiUrl.js';
+
+const API_URL = getApiUrl();
 
 export default function TimeEntryManager() {
   const [entries, setEntries] = useState([]);

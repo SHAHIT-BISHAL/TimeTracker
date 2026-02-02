@@ -3,7 +3,9 @@ import axios from 'axios';
 import { Moon, Sun, Bell, Save } from 'lucide-react';
 import './EnhancedSettings.css';
 
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+import { getApiUrl } from '../utils/apiUrl.js';
+
+const API_URL = getApiUrl();
 
 export default function EnhancedSettings() {
   const [settings, setSettings] = useState({

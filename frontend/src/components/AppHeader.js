@@ -88,7 +88,8 @@ const AppHeader = memo(({
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+    const { getApiUrl } = await import('../utils/apiUrl.js');
+    const API_URL = getApiUrl();
     fetch(`${API_URL}/companies`, {
       headers: { Authorization: `Bearer ${token}` }
     })

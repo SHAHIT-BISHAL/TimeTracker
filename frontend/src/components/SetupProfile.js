@@ -4,7 +4,9 @@ import { CheckCircle, AlertCircle } from 'lucide-react';
 import './SetupProfile.css';
 
 // Use dynamic API URL (same as in api.js)
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+import { getApiUrl } from '../utils/apiUrl.js';
+
+const API_URL = getApiUrl();
 
 export default function SetupProfile({ onSetupComplete }) {
   const [step, setStep] = useState(1); // 1 = Company, 2 = Hourly Rate, 3 = Pay Cycle

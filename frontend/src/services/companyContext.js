@@ -109,7 +109,8 @@ export const companyContext = {
    * @returns {Promise<void>}
    */
   async switchCompany(companyId, companyData = null) {
-    const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+    const { getApiUrl } = await import('../utils/apiUrl.js');
+    const API_URL = getApiUrl();
     const token = localStorage.getItem('token');
 
     try {

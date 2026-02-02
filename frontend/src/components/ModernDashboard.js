@@ -4,6 +4,7 @@ import { Clock, Menu, X, LogOut as LogOutIcon, Building2, MessageSquare, Mail, F
 import { useNavigate } from 'react-router-dom';
 import { timeService } from '../services/api';
 import { useActiveCompany } from '../contexts/CompanyContext';
+import { getApiUrl } from '../utils/apiUrl.js';
 import AppHeader from './AppHeader';
 import ClockInDashboard from './ClockInDashboard';
 import ModernManualEntryForm from './ModernManualEntryForm';
@@ -23,7 +24,7 @@ import MessagePreview from './MessagePreview';
  * Manages navigation between different views and handles clock in/out logic
  */
 export default function ModernDashboard() {
-  const API_BASE = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000`;
+const API_BASE = getApiUrl().replace('/api', '');
   const { activeCompanyId, activeCompanyName, activeCompanyData, switchCompany } = useActiveCompany();
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [currentEntry, setCurrentEntry] = useState(null);

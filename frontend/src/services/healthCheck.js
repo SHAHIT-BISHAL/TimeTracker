@@ -3,7 +3,9 @@
  * Diagnoses API connectivity and provides detailed error information
  */
 
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+import { getApiUrl } from '../utils/apiUrl.js';
+
+const API_URL = getApiUrl();
 
 export const healthCheck = async () => {
   try {
@@ -34,16 +36,11 @@ export const healthCheck = async () => {
       error: err.message,
       hint: window.location.hostname === 'localhost' 
         ? 'Make sure the backend is running on port 5000'
-        : `Make sure the server at ${window.location.hostname}:5000 is accessible`
+        : 'Make sure the reverse proxy is correctly configured'
     };
   }
 };
 
-export const getApiUrl = () => {
+export const getApiUrlValue = () => {
   return API_URL;
-};
-
-export const getServerAddress = () => {
-  const url = new URL(API_URL);
-  return `${url.hostname}:${url.port || 5000}`;
 };

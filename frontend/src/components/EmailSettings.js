@@ -3,7 +3,9 @@ import axios from 'axios';
 import { Mail, Lock, CheckCircle } from 'lucide-react';
 import './EmailSettings.css';
 
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+import { getApiUrl } from '../utils/apiUrl.js';
+
+const API_URL = getApiUrl();
 
 export default function EmailSettings() {
   const [settings, setSettings] = useState({

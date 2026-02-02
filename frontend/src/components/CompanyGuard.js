@@ -7,7 +7,9 @@ import CompanySelector from './CompanySelector';
 import CompanyManager from './CompanyManager';
 import { useActiveCompany } from '../contexts/CompanyContext';
 
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+import { getApiUrl } from '../utils/apiUrl.js';
+
+const API_URL = getApiUrl();
 
 /**
  * CompanyGuard - Ensures user has selected a company before accessing protected routes

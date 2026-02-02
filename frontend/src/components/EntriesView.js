@@ -4,7 +4,9 @@ import { X, Trash2, Edit2, Plus, Clock, AlertCircle, Calendar } from 'lucide-rea
 import axios from 'axios';
 import ModernManualEntryForm from './ModernManualEntryForm';
 
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+import { getApiUrl } from '../utils/apiUrl.js';
+
+const API_URL = getApiUrl();
 
 /**
  * Entries view - Shows list of time entries with add/edit/delete functionality

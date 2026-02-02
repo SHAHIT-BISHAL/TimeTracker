@@ -3,7 +3,9 @@ import { motion } from 'framer-motion';
 import { Settings, Moon, Sun, DollarSign, Calendar, Bell, Save, AlertCircle, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+import { getApiUrl } from '../utils/apiUrl.js';
+
+const API_URL = getApiUrl();
 
 export default function ModernSettings({ onClose }) {
   const [settings, setSettings] = useState({

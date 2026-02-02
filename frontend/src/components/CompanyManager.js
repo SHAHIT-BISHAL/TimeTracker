@@ -4,7 +4,9 @@ import { Building2, Plus, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import ModalForm from './ModalForm';
 
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+import { getApiUrl } from '../utils/apiUrl.js';
+
+const API_URL = getApiUrl();
 
 /**
  * Company manager - Create and switch between companies (Premium SaaS modal)

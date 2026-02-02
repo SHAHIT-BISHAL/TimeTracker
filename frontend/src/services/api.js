@@ -1,8 +1,7 @@
 import axios from 'axios';
+import { getApiUrl } from '../utils/apiUrl.js';
 
-// If REACT_APP_API_URL is set, use it. Otherwise construct a host-based API URL so
-// mobile devices accessing the dev server via LAN use the same host
-const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000/api`;
+const API_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: API_URL
