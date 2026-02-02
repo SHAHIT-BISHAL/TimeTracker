@@ -6,6 +6,11 @@
  * 3. Production with reverse proxy using relative path
  */
 export function getApiUrl() {
+  // Ensure we're in a browser context
+  if (typeof window === 'undefined') {
+    return '/api';
+  }
+
   if (process.env.REACT_APP_API_URL) {
     return process.env.REACT_APP_API_URL;
   }

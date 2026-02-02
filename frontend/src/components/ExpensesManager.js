@@ -5,7 +5,7 @@ import axios from 'axios';
 
 import { getApiUrl } from '../utils/apiUrl.js';
 
-const API_URL = getApiUrl();
+const getAPI_URL = () => getApiUrl();
 
 /**
  * Expenses Manager - Display and manage expenses

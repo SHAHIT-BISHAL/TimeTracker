@@ -6,7 +6,7 @@ import ModalForm from './ModalForm';
 
 import { getApiUrl } from '../utils/apiUrl.js';
 
-const API_URL = getApiUrl();
+const getAPI_URL = () => getApiUrl();
 
 /**
  * Company manager - Create and switch between companies (Premium SaaS modal)

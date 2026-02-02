@@ -9,8 +9,6 @@ import { useActiveCompany } from '../contexts/CompanyContext';
 
 import { getApiUrl } from '../utils/apiUrl.js';
 
-const API_URL = getApiUrl();
-
 /**
  * CompanyGuard - Ensures user has selected a company before accessing protected routes
  * Flow:
@@ -36,6 +34,7 @@ export default function CompanyGuard({ children }) {
     setError(null);
     
     try {
+      const API_URL = getApiUrl();
       // Fetch user's companies
       const token = localStorage.getItem('token');
       if (!token) {

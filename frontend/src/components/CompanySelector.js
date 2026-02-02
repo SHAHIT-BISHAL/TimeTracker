@@ -6,7 +6,7 @@ import './CompanySelector.css';
 
 import { getApiUrl } from '../utils/apiUrl.js';
 
-const API_URL = getApiUrl();
+const getAPI_URL = () => getApiUrl();
 
 /**
  * CompanySelector Component

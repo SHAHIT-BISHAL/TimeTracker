@@ -5,11 +5,11 @@
 
 import { getApiUrl } from '../utils/apiUrl.js';
 
-const API_URL = getApiUrl();
+const getAPI_URL = () => getApiUrl();
 
 export const healthCheck = async () => {
   try {
-    const response = await fetch(`${API_URL.replace('/api', '')}/api/health`, {
+    const response = await fetch(`${getAPI_URL().replace('/api', '')}/api/health`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -42,5 +42,5 @@ export const healthCheck = async () => {
 };
 
 export const getApiUrlValue = () => {
-  return API_URL;
+  return getAPI_URL();
 };
