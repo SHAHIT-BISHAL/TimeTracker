@@ -7,7 +7,7 @@ Refactored the API client to use relative URLs (`/api`) consistently across all 
 
 ### 1. Simplified API URL Resolution (`frontend/src/utils/apiUrl.js`)
 **Before**: Complex logic with hostname detection for localhost, private IPs, and production
-**After**: Always returns `/api` (relative path)
+**After**: Smart detection that adapts to access pattern
 
 ```javascript
 export function getApiUrl() {
@@ -16,7 +16,19 @@ export function getApiUrl() {
     return process.env.REACT_APP_API_URL;
   }
   
-  // Always use relative path - let proxy handle routing
+  const hostname = window.location.hostname;
+  
+  // localhost → Use relative /api (proxy will handle it)
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return '/api';
+  }
+  
+  // IP addresses → Connect directly to :5000
+  if (isPrivateIP(hostname)) {
+    return `http://${hostname}:5000/api`;
+  }
+  
+  // Domain names → Use relative /api (nginx will proxy it)
   return '/api';
 }
 ```
@@ -54,26 +66,35 @@ fetch(`${API_BASE_URL}/companies`);
 ```
 Browser → http://localhost:3000
   ↓ Request to /api/companies
-  ↓ package.json proxy intercepts
+  ↓ React proxy intercepts (from package.json)
   ↓ Forwards to http://localhost:5000/api/companies
 Backend → Returns JSON
 ```
 
 **Setup**: Just run `npm start` - proxy is automatic
 
+### LAN/IP Access (192.168.x.x:3000 or any IP)
+```
+Browser → http://192.168.1.155:3000
+  ↓ Detects IP address
+  ↓ Direct request to http://192.168.1.155:5000/api/companies
+  ↓ (React proxy doesn't work for non-localhost)
+Backend → Returns JSON
+```
+
+**Setup**: Backend must be running on port 5000 on that IP
+
 ### Production with Nginx Reverse Proxy (time.shahit.org)
 ```
 Browser → http://time.shahit.org
   ↓ Request to /api/companies
-  ↓ Nginx location /api/ block
+  ↓ Detects domain name
+  ↓ Nginx location /api/ block intercepts
   ↓ Proxies to http://localhost:5000/api/companies
 Backend → Returns JSON
 ```
 
 **Setup**: Requires nginx configuration (see below)
-
-### Direct IP Access (192.168.1.155:3000)
-Same as local development - proxy handles it automatically.
 
 ## Nginx Configuration (Production)
 
