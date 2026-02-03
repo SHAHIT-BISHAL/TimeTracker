@@ -70,17 +70,35 @@ export default function ApiDiagnostic() {
           ]);
 
           if (companiesResponse.ok) {
-            const data = await companiesResponse.json();
-            tests.companiesAuth = {
-              status: 'success',
-              message: `Companies endpoint returned ${data.length || 0} companies`,
-              data: { status: companiesResponse.status, count: data.length, headers: Object.fromEntries(companiesResponse.headers.entries()) }
-            };
+            const responseText = await companiesResponse.text();
+            try {
+              const data = JSON.parse(responseText);
+              tests.companiesAuth = {
+                status: 'success',
+                message: `Companies endpoint returned ${data.length || 0} companies`,
+                data: { status: companiesResponse.status, count: data.length, headers: Object.fromEntries(companiesResponse.headers.entries()) }
+              };
+            } catch (parseErr) {
+              tests.companiesAuth = {
+                status: 'error',
+                message: `Got 200 but response is not JSON. Likely reverse proxy is serving index.html instead of proxying to backend.`,
+                data: { 
+                  status: companiesResponse.status, 
+                  responsePreview: responseText.substring(0, 200),
+                  contentType: companiesResponse.headers.get('content-type')
+                }
+              };
+            }
           } else {
+            const responseText = await companiesResponse.text();
             tests.companiesAuth = {
               status: 'error',
               message: `Companies endpoint returned ${companiesResponse.status}`,
-              data: { status: companiesResponse.status }
+              data: { 
+                status: companiesResponse.status,
+                responsePreview: responseText.substring(0, 200),
+                contentType: companiesResponse.headers.get('content-type')
+              }
             };
           }
         } catch (err) {
