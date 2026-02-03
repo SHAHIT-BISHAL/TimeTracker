@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getApiUrl } from '../utils/apiUrl.js';
 
+// Create axios instance with relative base URL
 const api = axios.create({
   baseURL: getApiUrl()
 });
@@ -36,6 +37,13 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Export configured API client
+export default api;
+
+// Export base URL for components that need it (e.g., file downloads)
+export const API_BASE_URL = getApiUrl();
+
+// Convenience service exports
 export const authService = {
   register: (username, email, password) =>
     api.post('/auth/register', { username, email, password }),
@@ -64,5 +72,3 @@ export const payCycleService = {
   generateMessage: (startDate, endDate) =>
     api.get('/paycycle/generate-message', { params: { startDate, endDate } })
 };
-
-export default api;
