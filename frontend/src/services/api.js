@@ -37,6 +37,45 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Response interceptor to detect HTML responses (reverse proxy misconfiguration)
+api.interceptors.response.use(
+  (response) => {
+    const contentType = response.headers['content-type'];
+    
+    // If we got HTML when expecting JSON, the reverse proxy is misconfigured
+    if (contentType && contentType.includes('text/html')) {
+      const error = new Error(
+        'Reverse proxy misconfiguration: API endpoint returned HTML instead of JSON. ' +
+        'This typically means Nginx is serving the React app for /api/* routes. ' +
+        'Check that the "location /api/" block is configured BEFORE "location /" in your Nginx config.'
+      );
+      error.code = 'PROXY_MISCONFIGURATION';
+      error.response = response;
+      return Promise.reject(error);
+    }
+    
+    return response;
+  },
+  (error) => {
+    // Check if error response contains HTML
+    if (error.response) {
+      const contentType = error.response.headers['content-type'];
+      if (contentType && contentType.includes('text/html')) {
+        const proxyError = new Error(
+          'Reverse proxy misconfiguration: Received HTML error page instead of JSON API response. ' +
+          'Verify Nginx configuration and that the backend server is running.'
+        );
+        proxyError.code = 'PROXY_MISCONFIGURATION';
+        proxyError.originalError = error;
+        proxyError.response = error.response;
+        return Promise.reject(proxyError);
+      }
+    }
+    
+    return Promise.reject(error);
+  }
+);
+
 // Export configured API client
 export default api;
 
