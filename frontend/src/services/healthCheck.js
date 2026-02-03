@@ -18,13 +18,13 @@ export const healthCheck = async () => {
       return { 
         healthy: true, 
         message: 'Server is responding',
-        apiUrl: API_URL 
+        apiUrl: getAPI_URL() 
       };
     } else {
       return { 
         healthy: false, 
         message: `Server returned status ${response.status}`,
-        apiUrl: API_URL,
+        apiUrl: getAPI_URL(),
         status: response.status
       };
     }
@@ -32,7 +32,7 @@ export const healthCheck = async () => {
     return { 
       healthy: false, 
       message: `Cannot connect to server: ${err.message}`,
-      apiUrl: API_URL,
+      apiUrl: getAPI_URL(),
       error: err.message,
       hint: window.location.hostname === 'localhost' 
         ? 'Make sure the backend is running on port 5000'

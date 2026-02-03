@@ -54,7 +54,7 @@ export default function CompanySelector({
         return;
       }
       
-      const response = await axios.get(`${API_URL}/companies`, {
+      const response = await axios.get(`${getAPI_URL()}/companies`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCompanies(response.data || []);
@@ -110,7 +110,7 @@ export default function CompanySelector({
         return;
       }
       
-      const response = await axios.post(`${API_URL}/companies`, formData, {
+      const response = await axios.post(`${getAPI_URL()}/companies`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       

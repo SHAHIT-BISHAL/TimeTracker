@@ -34,7 +34,7 @@ export default function ExpensesManager({ selectedCompanyId }) {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/expenses`, {
+      const response = await axios.get(`${getAPI_URL()}/expenses`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setExpenses(response.data.expenses || []);
@@ -50,7 +50,7 @@ export default function ExpensesManager({ selectedCompanyId }) {
   const handleDelete = async (expenseId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/expenses/${expenseId}`, {
+      await axios.delete(`${getAPI_URL()}/expenses/${expenseId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setExpenses(expenses.filter(e => e.id !== expenseId));
@@ -63,7 +63,7 @@ export default function ExpensesManager({ selectedCompanyId }) {
 
   const handleDownloadReceipt = (receiptPath) => {
     if (receiptPath) {
-      const fullPath = `${API_URL.replace('/api', '')}${receiptPath}`;
+      const fullPath = `${getAPI_URL().replace('/api', '')}${receiptPath}`;
       window.open(fullPath, '_blank');
     }
   };

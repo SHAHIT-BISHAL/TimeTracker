@@ -36,7 +36,7 @@ export default function CompanyManager({ isOpen, onClose, onCompanyChanged, forc
       setLoading(true);
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
-      const response = await axios.get(`${API_URL}/companies`, config);
+      const response = await axios.get(`${getAPI_URL()}/companies`, config);
       setCompanies(response.data || []);
     } catch (err) {
       console.error('Error fetching companies:', err);
@@ -59,7 +59,7 @@ export default function CompanyManager({ isOpen, onClose, onCompanyChanged, forc
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      await axios.post(`${API_URL}/companies`, formData, config);
+      await axios.post(`${getAPI_URL()}/companies`, formData, config);
       setMessage('✅ Company created successfully');
       setFormData({ name: '', description: '', industry: '' });
       setShowForm(false);
@@ -86,7 +86,7 @@ export default function CompanyManager({ isOpen, onClose, onCompanyChanged, forc
       const token = localStorage.getItem('token');
       const config = { headers: { Authorization: `Bearer ${token}` } };
 
-      await axios.put(`${API_URL}/users/current-company`, { company_id: companyId }, config);
+      await axios.put(`${getAPI_URL()}/users/current-company`, { company_id: companyId }, config);
       setMessage('✅ Company switched');
 
       setTimeout(() => {
